@@ -58,7 +58,7 @@ def main(args):
     file_test = args.input
     dataset = CustomDataset(file_test, tokenizer)
 
-    with open(file_test, "r") as f:
+    with open(file_test, "r", encoding='utf8') as f:
         result = json.load(f)
 
     for idx in tqdm.tqdm(range(len(dataset))):

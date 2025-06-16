@@ -14,7 +14,7 @@ class CustomDataset(Dataset):
             당신은 한국의 전통 문화와 역사, 문법, 사회, 과학기술 등 다양한 분야에 대해 잘 알고 있는 유능한 AI 어시스턴트 입니다. 사용자의 질문에 대해 친절하게 답변해주세요. \
             단, 동일한 문장을 절대 반복하지 마시오.'''
 
-        with open(fname, "r") as f:
+        with open(fname, encoding='utf-8') as f:
             data = json.load(f)
 
         def make_chat(inp):

@@ -5,7 +5,8 @@ https://kli.korean.go.kr/benchmark/taskOrdtm/taskDownload.do?taskOrdtmId=181&clC
 docker exec -it k_culture /bin/bash
 
 # 실행
-python -m run.test  --input resource/QA/sample.json  --output result.json   --model_id naver-hyperclovax/HyperCLOVAX-SEED-Text-Instruct-1.5B   --device auto
+(환경 테스트) python -m run.test  --input resource/QA/sample_qa.json  --output result.json   --model_id naver-hyperclovax/HyperCLOVAX-SEED-Text-Instruct-0.5B   --device cuda:0
+python -m run.test  --input resource/data_given/korean_culture_qa_V1.0_test.json  --output result.json   --model_id naver-hyperclovax/HyperCLOVAX-SEED-Text-Instruct-0.5B   --device cuda:0
 
 # 평가 데이터 양식
 https://github.com/teddysum/korean_evaluation
