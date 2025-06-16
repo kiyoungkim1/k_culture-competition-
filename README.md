@@ -1,3 +1,20 @@
+# 과제
+https://kli.korean.go.kr/benchmark/taskOrdtm/taskDownload.do?taskOrdtmId=181&clCd=ING_TASK&subMenuId=sub02&resultCd=58058&resultCK=SUCCESS#
+
+# 도커 접속
+docker exec -it k_culture /bin/bash
+
+# 실행
+python -m run.test  --input resource/QA/sample.json  --output result.json   --model_id naver-hyperclovax/HyperCLOVAX-SEED-Text-Instruct-1.5B   --device auto
+
+# 평가 데이터 양식
+https://github.com/teddysum/korean_evaluation
+
+
+
+
+============================================
+
 # 한국문화 질의응답 Baseline
 본 리포지토리는 '2025년 국립국어원 인공지능의 한국어 능력 평가' 경진 대회 과제 중 '한국문화 질의응답'에 대한 베이스라인 모델의 추론과 평가를 재현하기 위한 코드를 포함하고 있습니다.
 
