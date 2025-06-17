@@ -22,13 +22,26 @@ g.add_argument("--device", type=str, required=True, help="device to load the mod
 g.add_argument("--use_auth_token", type=str, help="Hugging Face token for accessing gated models")
 # fmt: on
 
+def check_vram(device):
+    # 현재 사용 중인 GPU 번호
+    device = torch.device(device)
+
+    # 현재 할당된 VRAM
+    allocated = torch.cuda.memory_allocated(device) / (1024 ** 2)  # MB 단위
+    # 현재 캐시된 VRAM (PyTorch가 메모리 관리를 위해 유지)
+    reserved = torch.cuda.memory_reserved(device) / (1024 ** 2)  # MB 단위
+
+    print(f"Allocated VRAM: {allocated:.2f} MB")
+    print(f"Reserved VRAM: {reserved:.2f} MB")
 
 def main(args):
     # Prepare model loading kwargs
     model_kwargs = {
-        "torch_dtype": torch.bfloat16,
-        "device_map": args.device,
+        "device_map": args.device,  # ex: "cuda" or "auto"
+        "load_in_4bit": True,  # ✅ 핵심 부분
+        "bnb_4bit_compute_dtype": torch.float16,  # optional: bfloat16도 가능
     }
+
     if args.use_auth_token:
         model_kwargs["use_auth_token"] = args.use_auth_token
 
@@ -109,6 +122,10 @@ def main(args):
         output_text = output_text.split("\n\n")[0]
 
         result[idx]["output"] = {"answer": output_text}
+
+        # log
+        print(output_text)
+        check_vram(args.device)
 
     with open(args.output, "w", encoding="utf-8") as f:
         f.write(json.dumps(result, ensure_ascii=False, indent=4))
