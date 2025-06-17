@@ -11,8 +11,8 @@ class CustomDataset(Dataset):
         self.label = []
 
         PROMPT = '''You are a helpful AI assistant. Please answer the user's questions kindly. \
-            당신은 한국의 전통 문화와 역사, 문법, 사회, 과학기술 등 다양한 분야에 대해 잘 알고 있는 유능한 AI 어시스턴트 입니다. 사용자의 질문에 대해 친절하게 답변해주세요. \
-            단, 동일한 문장을 절대 반복하지 마시오.'''
+당신은 한국의 전통 문화와 역사, 문법, 사회, 과학기술 등 다양한 분야에 대해 잘 알고 있는 유능한 AI 어시스턴트 입니다. 사용자의 질문에 대해 친절하게 답변해주세요. \
+단, 동일한 문장을 절대 반복하지 마시오.'''
 
         with open(fname, encoding='utf-8') as f:
             data = json.load(f)
@@ -83,10 +83,10 @@ class CustomDataset(Dataset):
 
             # 질문 추가
             chat_parts.append(f"[질문]\n{inp['question']}")
+            chat_parts.append("답변:")
 
             # 최종 프롬프트 생성
             chat = "\n\n".join(chat_parts)
-
             # print(f'[DBG] chat: {chat}')
 
             return chat

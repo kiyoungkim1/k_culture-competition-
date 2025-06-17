@@ -68,7 +68,7 @@ def main(args):
             max_new_tokens=1024,
             eos_token_id=terminators,
             pad_token_id=tokenizer.eos_token_id,
-            repetition_penalty=1.05,
+            repetition_penalty=0.5,
             temperature=0.7,
             top_p=0.8,
             # do_sample=False,
@@ -78,10 +78,14 @@ def main(args):
         
         # 출력에서 "답변: " 접두어 제거
         if output_text.startswith("답변: "):
-            output_text = output_text[4:]
+            output_text = output_text[4:].strip()
         elif output_text.startswith("답변:"):
-            output_text = output_text[3:]
-            
+            output_text = output_text[3:].strip()
+        elif output_text.startswith("[답변]"):
+            output_text = output_text[4:].strip()
+        elif output_text.startswith("[답변]\n"):
+            output_text = output_text[5:].strip()
+
         result[idx]["output"] = {"answer": output_text}
 
     with open(args.output, "w", encoding="utf-8") as f:

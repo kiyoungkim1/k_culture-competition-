@@ -1,6 +1,9 @@
 # 과제
 https://kli.korean.go.kr/benchmark/taskOrdtm/taskDownload.do?taskOrdtmId=181&clCd=ING_TASK&subMenuId=sub02&resultCd=58058&resultCK=SUCCESS#
 
+# 학습
+ssh -p 8501 raynor@1.249.212.198 
+
 # 도커 접속
 docker exec -it k_culture /bin/bash
 
