@@ -8,8 +8,8 @@ ssh -p 8501 raynor@1.249.212.198
 docker exec -it k_culture /bin/bash
 
 # 실행
-(환경 테스트) python -m run.test  --input resource/QA/sample_qa.json  --output result.json   --model_id naver-hyperclovax/HyperCLOVAX-SEED-Text-Instruct-0.5B   --device cuda:0
-python -m run.test  --input resource/data_given/korean_culture_qa_V1.0_test.json  --output result.json   --model_id naver-hyperclovax/HyperCLOVAX-SEED-Text-Instruct-0.5B   --device cuda:0
+(환경 테스트) python -m run.main  --input resource/QA/sample_qa.json  --output result.json   --model_id naver-hyperclovax/HyperCLOVAX-SEED-Text-Instruct-0.5B   --device cuda:0
+python -m run.main  --input resource/data_given/korean_culture_qa_V1.0_test.json  --output result.json   --model_id naver-hyperclovax/HyperCLOVAX-SEED-Text-Instruct-0.5B   --device cuda:0
 
 # 평가 데이터 양식
 https://github.com/teddysum/korean_evaluation

@@ -75,7 +75,7 @@ def main(args):
         )
 
         output_text = tokenizer.decode(outputs[0][inp.shape[-1]:], skip_special_tokens=True)
-        
+
         # 출력에서 "답변: " 접두어 제거
         if output_text.startswith("답변: "):
             output_text = output_text[4:].strip()
@@ -85,6 +85,9 @@ def main(args):
             output_text = output_text[4:].strip()
         elif output_text.startswith("[답변]\n"):
             output_text = output_text[5:].strip()
+
+        # \n\n 에서 끊기
+        output_text = output_text.split("\n\n")[0]
 
         result[idx]["output"] = {"answer": output_text}
 
