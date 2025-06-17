@@ -5,6 +5,7 @@ import tqdm
 import torch
 import numpy
 from transformers import AutoTokenizer, AutoModelForCausalLM
+from transformers import StoppingCriteria, StoppingCriteriaList
 
 from src.data import CustomDataset
 
@@ -55,6 +56,23 @@ def main(args):
         tokenizer.convert_tokens_to_ids("<|eot_id|>") if tokenizer.convert_tokens_to_ids("<|eot_id|>") else tokenizer.convert_tokens_to_ids("<|endoftext|>")
     ]
 
+    if len(tokenizer.encode("\n\n", add_special_tokens=False)) == 1:    # \n\n 자체가 하나의 token일 수도 있음
+        terminators.append(tokenizer.convert_tokens_to_ids("\n\n"))
+
+    class StopOnDoubleNewline(StoppingCriteria):
+        def __init__(self, tokenizer, stop_sequence="\n\n"):
+            self.stop_ids = tokenizer.encode(stop_sequence, add_special_tokens=False)
+
+        def __call__(self, input_ids, scores, **kwargs):
+            if input_ids.shape[1] >= len(self.stop_ids):
+                if input_ids[0, -len(self.stop_ids):].tolist() == self.stop_ids:
+                    return True
+            return False
+    stop_criteria = StoppingCriteriaList([
+        StopOnDoubleNewline(tokenizer)
+    ])
+
+
     file_test = args.input
     dataset = CustomDataset(file_test, tokenizer)
 
@@ -67,6 +85,7 @@ def main(args):
             inp.to(args.device).unsqueeze(0),
             max_new_tokens=1024,
             eos_token_id=terminators,
+            stopping_criteria=stop_criteria,
             pad_token_id=tokenizer.eos_token_id,
             repetition_penalty=0.5,
             temperature=0.7,
