@@ -14,6 +14,11 @@ python -m run.main  --input resource/data_given/korean_culture_qa_V1.0_test.json
 #### 딥시크
 python -m run.main  --input resource/data_given/korean_culture_qa_V1.0_test.json  --output result.json   --model_id deepseek-ai/DeepSeek-R1-Distill-Qwen-32B --device cuda:1
 
+### qwen
+python -m run.main  --input resource/data_given/korean_culture_qa_V1.0_test.json  --output result.json   --model_id Qwen/Qwen3-8B --device cuda:1
+
+
+
 # deepseek-ai/DeepSeek-R1-Distill-Qwen-32B   --> 4bit로 불러오면 24GB 안에 돌릴 수 있음
 
 # 평가 데이터 양식

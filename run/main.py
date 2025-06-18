@@ -38,8 +38,8 @@ def main(args):
     # Prepare model loading kwargs
     model_kwargs = {
         "device_map": args.device,  # ex: "cuda" or "auto"
-        "load_in_4bit": True,  # ✅ 핵심 부분
-        "bnb_4bit_compute_dtype": torch.float16,  # optional: bfloat16도 가능
+        # "load_in_4bit": True,  # ✅ 핵심 부분
+        # "bnb_4bit_compute_dtype": torch.float16,  # optional: bfloat16도 가능
     }
 
     if args.use_auth_token:
@@ -66,7 +66,7 @@ def main(args):
     tokenizer.pad_token = tokenizer.eos_token
     terminators = [
         tokenizer.eos_token_id,
-        tokenizer.convert_tokens_to_ids("<|eot_id|>") if tokenizer.convert_tokens_to_ids("<|eot_id|>") else tokenizer.convert_tokens_to_ids("<|endoftext|>")
+        # tokenizer.convert_tokens_to_ids("<|eot_id|>") if tokenizer.convert_tokens_to_ids("<|eot_id|>") else tokenizer.convert_tokens_to_ids("<|endoftext|>")
     ]
 
     if len(tokenizer.encode("\n\n", add_special_tokens=False)) == 1:    # \n\n 자체가 하나의 token일 수도 있음
@@ -85,7 +85,6 @@ def main(args):
         StopOnDoubleNewline(tokenizer)
     ])
 
-
     file_test = args.input
     dataset = CustomDataset(file_test, tokenizer)
 
@@ -96,7 +95,7 @@ def main(args):
         inp = dataset[idx]
         outputs = model.generate(
             inp.to(args.device).unsqueeze(0),
-            max_new_tokens=1024,
+            max_new_tokens=1536,
             eos_token_id=terminators,
             stopping_criteria=stop_criteria,
             pad_token_id=tokenizer.eos_token_id,
