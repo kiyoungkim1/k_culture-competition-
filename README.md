@@ -9,8 +9,10 @@ docker exec -it k_culture /bin/bash
 
 # 실행
 (환경 테스트) python -m run.main  --input resource/QA/sample_qa.json  --output result.json   --model_id naver-hyperclovax/HyperCLOVAX-SEED-Text-Instruct-0.5B   --device cuda:0
-python -m run.main  --input resource/data_given/korean_culture_qa_V1.0_test.json  --output result.json   --model_id naver-hyperclovax/HyperCLOVAX-SEED-Text-Instruct-0.5B   --device cuda:0
+python -m run.main  --input resource/data_given/korean_culture_qa_V1.0_test.json  --output result.json   --model_id naver-hyperclovax/HyperCLOVAX-SEED-Text-Instruct-0.5B   --device cuda:1
 
+#### 딥시크
+python -m run.main  --input resource/data_given/korean_culture_qa_V1.0_test.json  --output result.json   --model_id deepseek-ai/DeepSeek-R1-Distill-Qwen-32B --device cuda:1
 
 # deepseek-ai/DeepSeek-R1-Distill-Qwen-32B   --> 4bit로 불러오면 24GB 안에 돌릴 수 있음
 
