@@ -12,7 +12,7 @@ docker exec -it k_culture /bin/bash
 python -m run.main  --input resource/data_given/korean_culture_qa_V1.0_test.json  --output result.json   --model_id naver-hyperclovax/HyperCLOVAX-SEED-Text-Instruct-0.5B   --device cuda:1
 
 #### 딥시크
-python -m run.main  --input resource/data_given/korean_culture_qa_V1.0_test.json  --output result.json   --model_id deepseek-ai/DeepSeek-R1-Distill-Qwen-32B --device cuda:1
+python -m run.main --input resource/data_given/korean_culture_qa_V1.0_test.json  --output result.json   --model_id deepseek-ai/DeepSeek-R1-Distill-Qwen-32B --device cuda:1
 
 ### qwen
 python -m run.main  --input resource/data_given/korean_culture_qa_V1.0_test.json  --output result.json   --model_id Qwen/Qwen3-8B --device cuda:1
