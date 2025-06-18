@@ -96,8 +96,8 @@ def main(args):
         outputs = model.generate(
             inp.to(args.device).unsqueeze(0),
             max_new_tokens=1536,
-            eos_token_id=terminators,
-            stopping_criteria=stop_criteria,
+            eos_token_id=tokenizer.eos_token_id, #terminators,
+            # stopping_criteria=stop_criteria,
             pad_token_id=tokenizer.eos_token_id,
             repetition_penalty=0.5,
             temperature=0.7,

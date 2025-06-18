@@ -47,7 +47,7 @@ class CustomDataset(Dataset):
 {}
 
 topic_keyword는 {}입니다.
-먼저 <background> </background> 사이에 topic_keyword와 관련하여 중요한 정보 5가지를 작성해 주세요.
+먼저 <background> </background> 사이에 topic_keyword와 관련하여 중요한 정보 5가지를 300자 이내로 작성해 주세요.
 그 다음 <solve> </solve> 사이에 답변에 해당하는 숫자를 작성하세요.
 이 후 <eval> </eval>에서 그 답이 맞는지 평가하고, 틀리다면 왜 틀렸는지에 대해 간단히 작성하세요.
 최종 답변인 숫자는 <result> </result> 사이에 작성해 주세요.
@@ -64,7 +64,7 @@ topic_keyword는 {}입니다.
 질문: {}
 
 topic_keyword는 {}입니다.
-먼저 <background> </background> 사이에 topic_keyword와 관련하여 중요한 정보 5가지를 작성해 주세요.
+먼저 <background> </background> 사이에 topic_keyword와 관련하여 중요한 정보 5가지를 300자 이내로 작성해 주세요.
 그 다음 <solve> </solve> 사이에 답변에 해당하는 답을 완성된 문장으로 작성하세요.
 이 후 <eval> </eval>에서 그 답이 맞는지 평가하고, 틀리다면 왜 틀렸는지에 대해 간단히 작성하세요.
 최종적으로 완성된 문장의 답변을 <result> </result> 사이에 작성해 주세요.
@@ -81,7 +81,7 @@ topic_keyword는 {}입니다.
 질문: {}
 
 topic_keyword는 {}입니다.
-먼저 <background> </background> 사이에 topic_keyword와 관련하여 중요한 정보 5가지를 작성해 주세요.
+먼저 <background> </background> 사이에 topic_keyword와 관련하여 중요한 정보 5가지를 300자 이내로 작성해 주세요.
 그 다음 <solve> </solve> 사이에 답변에 해당하는 답을 2단어 이내로 작성하세요.
 이 후 <eval> </eval>에서 그 답이 맞는지 평가하고, 틀리다면 왜 틀렸는지에 대해 간단히 작성하세요.
 최종적으로 2단어 이내의 답변을 <result> </result> 사이에 작성해 주세요.
