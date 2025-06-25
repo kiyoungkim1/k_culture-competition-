@@ -14,12 +14,12 @@ for item in data:
 
         if result_match:
             extracted_result = result_match.group(1).strip()
-            item["output"] = extracted_result
+            item["output"] = {"answer": extracted_result}
         else:
-            item["output"] = ""  # fallback if no result found
+            print("ERROR")
 
     else:
-        item["output"] = answer_text.split('\n')[-1].strip()
+        item["output"] = {"answer": answer_text.split('\n')[-1].strip()}
 
 # 결과 출력 또는 저장
 with open('output_cleaned.json', 'w', encoding='utf-8') as f:

@@ -4,6 +4,9 @@ import re
 import torch
 from torch.utils.data import Dataset
 
+from data_anaylsis import get_domain_specific_info
+
+domain_specific_info = get_domain_specific_info()
 
 class CustomDataset(Dataset):
     def __init__(self, fname, tokenizer):
@@ -19,8 +22,13 @@ class CustomDataset(Dataset):
             data = json.load(f)
 
         def make_chat(inp):
+            # domain
+            domain = inp['domain']
+            domain_info = domain_specific_info[domain]
 
             if inp['question_type'] == '선다형':
+
+
                 # question
                 question = inp['question'].split('\\n')[0].strip()
 
@@ -29,18 +37,21 @@ class CustomDataset(Dataset):
                 items = re.findall(r'(\d+)\s*\\t\s*([^0-9]+)', inp['question'])
                 for num, phrase in items:
                     choices_list.append(f"{num}) {phrase.strip()}")
-                choices = '\n'.join(choices_list)
+                choices = ' '.join(choices_list)
 
                 chat = """질문을 잘 읽고 한국사람으로써 가장 적절한 답변을 찾아주세요. 답변은 숫자만 작성해야합니다.
+예시는 해당 분야의 한국 문화에 대한 문제를 정확하게 푼 것이다.
+이와 같이 한국 문화를 기반으로 주어진 문제를 풀어야 한다.
 
 <예시>
 질문: 다음 한국의 전통 놀이 중 '조선시대'에 행한 놀이는?
-1) 주사위 놀이
-2) 검무
-3) 격구
-4) 영고
-5) 무애무
+1) 주사위 놀이   2) 검무   3) 격구   4) 영고   5) 무애무
 답변: 3
+
+###
+
+{}
+
 </예시>
 
 질문: {}
@@ -51,14 +62,20 @@ topic_keyword는 {}입니다.
 그 다음 <solve> </solve> 사이에 답변에 해당하는 숫자를 작성하세요.
 이 후 <eval> </eval>에서 그 답이 맞는지 평가하고, 틀리다면 왜 틀렸는지에 대해 간단히 작성하세요.
 최종 답변인 숫자는 <result> </result> 사이에 작성해 주세요.
-단, 동일한 문장을 절대 반복하지 마시오.""".format(question, choices, inp['topic_keyword'])
+단, 동일한 문장을 절대 반복하지 마시오.""".format(domain_info, question, choices, inp['topic_keyword'])
 
             elif inp['question_type'] == '서술형':
                 chat = """[질문]을 잘 읽고 한국사람으로써 가장 적절한 답변을 작성해 주세요. 질문에 대한 답변을 완성된 문장으로 서술하시오.
+예시는 해당 분야의 한국 문화에 대한 문제를 정확하게 푼 것이다.
+이와 같이 한국 문화를 기반으로 주어진 문제를 풀어야 한다.
 
 <예시>
 질문: 대한민국의 행정구역 체계를 서술하세요.
 답변: 대한민국의 행정구역은 여러 종류의 지역 단위로 나뉘어 구성되어 있으며, 먼저 특별시와 광역시부터 살펴볼 수 있다. 특별시로는 수도인 서울특별시가 있으며, 광역시에는 인천광역시, 부산광역시, 대전광역시, 광주광역시, 대구광역시, 울산광역시 등이 포함된다. 이 외에도 대한민국은 일반 도 단위로 6개의 도를 두고 있는데, 그 이름은 경기도, 충청북도, 충청남도, 전라남도, 경상북도, 경상남도로 구성되어 있다. 특별한 자치권을 부여받은 도인 특별자치도로는 제주특별자치도, 전북특별자치도, 강원특별자치도가 있다. 마지막으로 특별자치시로는 세종특별자치시가 존재한다.
+
+###
+
+{}
 </예시>
 
 질문: {}
@@ -68,14 +85,20 @@ topic_keyword는 {}입니다.
 그 다음 <solve> </solve> 사이에 답변에 해당하는 답을 완성된 문장으로 작성하세요.
 이 후 <eval> </eval>에서 그 답이 맞는지 평가하고, 틀리다면 왜 틀렸는지에 대해 간단히 작성하세요.
 최종적으로 완성된 문장의 답변을 <result> </result> 사이에 작성해 주세요.
-단, 동일한 문장을 절대 반복하지 마시오.""".format(inp['question'], inp['topic_keyword'])
+단, 동일한 문장을 절대 반복하지 마시오.""".format(domain_info, inp['question'], inp['topic_keyword'])
 
             elif inp['question_type'] == '단답형':
                 chat = """[질문]을 잘 읽고 한국사람으로써 가장 적절한 답변을 작성해 주세요. 질문에 대한 답을 2단어 이내로 간단히 답하시오.
+예시는 해당 분야의 한국 문화에 대한 문제를 정확하게 푼 것이다.
+이와 같이 한국 문화를 기반으로 주어진 문제를 풀어야 한다.
 
 <예시>
 질문: 조선 후기의 실학 사상가로 목민심서를 쓴 인물은?
 답변: 정약용
+
+###
+
+{}
 </예시>
 
 질문: {}
@@ -85,7 +108,7 @@ topic_keyword는 {}입니다.
 그 다음 <solve> </solve> 사이에 답변에 해당하는 답을 2단어 이내로 작성하세요.
 이 후 <eval> </eval>에서 그 답이 맞는지 평가하고, 틀리다면 왜 틀렸는지에 대해 간단히 작성하세요.
 최종적으로 2단어 이내의 답변을 <result> </result> 사이에 작성해 주세요.
-단, 동일한 문장을 절대 반복하지 마시오.""".format(inp['question'], inp['topic_keyword'])
+단, 동일한 문장을 절대 반복하지 마시오.""".format(domain_info, inp['question'], inp['topic_keyword'])
 
             return chat
         
