@@ -47,7 +47,9 @@ def main(args):
 
     model = AutoModelForCausalLM.from_pretrained(
         args.model_id,
-        **model_kwargs
+        trust_remote_code=True,
+        **model_kwargs,
+
     )
     model.eval()
 
