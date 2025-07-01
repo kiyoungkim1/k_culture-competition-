@@ -3,13 +3,13 @@ import json
 import re
 
 def get_domain_specific_info():
-    with open('resource/data_given/korean_culture_qa_V1.0_train.json', 'r', encoding='utf-8') as f:
+    with open('../resource/data_given/korean_culture_qa_V1.0_train.json', 'r', encoding='utf-8') as f:
         data_train = json.load(f)
 
-    with open('resource/data_given/korean_culture_qa_V1.0_dev.json', 'r', encoding='utf-8') as f:
+    with open('../resource/data_given/korean_culture_qa_V1.0_dev.json', 'r', encoding='utf-8') as f:
         data_dev = json.load(f)
 
-    with open('resource/data_given/korean_culture_qa_V1.0_test.json', 'r', encoding='utf-8') as f:
+    with open('../resource/data_given/korean_culture_qa_V1.0_test.json', 'r', encoding='utf-8') as f:
         data_test = json.load(f)
 
     def parse_korean_list(text):

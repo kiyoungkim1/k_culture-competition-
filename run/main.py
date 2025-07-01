@@ -38,7 +38,7 @@ def main(args):
     # Prepare model loading kwargs
     model_kwargs = {
         "device_map": args.device,  # ex: "cuda" or "auto"
-        "load_in_4bit": True,  # ✅ 핵심 부분
+        "load_in_4bit": True,
         "bnb_4bit_compute_dtype": torch.float16,  # optional: bfloat16도 가능
     }
 
@@ -97,11 +97,11 @@ def main(args):
         inp = dataset[idx]
         outputs = model.generate(
             inp.to(args.device).unsqueeze(0),
-            max_new_tokens=1024,
+            max_new_tokens=2048,
             eos_token_id=tokenizer.eos_token_id, #terminators,
             # stopping_criteria=stop_criteria,
             pad_token_id=tokenizer.eos_token_id,
-            repetition_penalty=1.0,
+            repetition_penalty=0.2,
             temperature=0.5,
             top_p=0.8,
             # do_sample=False,
