@@ -5,7 +5,6 @@ import re
 with open('result.json', 'r', encoding='utf-8') as f:
     data = json.load(f)
 
-
 # <result> 내부의 텍스트를 추출하고 output 필드를 갱신
 for item in data:
     answer_text = item.get("output", {}).get("answer", "")
@@ -36,4 +35,4 @@ for item in data:
 with open('output_cleaned.json', 'w', encoding='utf-8') as f:
     json.dump(data, f, ensure_ascii=False, indent=4)
 
-# python src/post_processing.py
+# python post_processing.py
