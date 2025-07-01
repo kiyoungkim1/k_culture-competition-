@@ -6,7 +6,7 @@ from torch.utils.data import Dataset
 
 from src.data_preprocessing import get_domain_specific_info
 
-domain_specific_info = get_domain_specific_info()
+# domain_specific_info = get_domain_specific_info()
 
 class CustomDataset(Dataset):
     def __init__(self, fname, tokenizer):
@@ -22,7 +22,7 @@ class CustomDataset(Dataset):
         def make_chat(inp):
             # domain
             domain = inp['domain']
-            domain_info = domain_specific_info[domain]
+            # domain_info = domain_specific_info[domain]
             ## TODO: domain info가 문제의 키워드 들이랑은 다른 지식인데 들어가는게 꼭 좋은지 모르겠음. 패턴을 가르쳐 주는게 아니기 때문에 많이 알려주는게 의미가 없을 듯.
 
             if inp['question_type'] == '선다형':
