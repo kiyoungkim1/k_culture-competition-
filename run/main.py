@@ -97,14 +97,14 @@ def main(args):
         inp = dataset[idx]
         outputs = model.generate(
             inp.to(args.device).unsqueeze(0),
-            max_new_tokens=2048,
+            max_new_tokens=1536,
             eos_token_id=tokenizer.eos_token_id, #terminators,
             # stopping_criteria=stop_criteria,
             pad_token_id=tokenizer.eos_token_id,
-            repetition_penalty=0.2,
-            temperature=0.5,
+            repetition_penalty=0.8,
+            temperature=0.3,
             top_p=0.8,
-            # do_sample=False,
+            do_sample=True,
         )
 
         output_text = tokenizer.decode(outputs[0][inp.shape[-1]:], skip_special_tokens=True)
