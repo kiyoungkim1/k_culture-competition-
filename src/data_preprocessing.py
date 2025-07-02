@@ -27,7 +27,7 @@ def get_domain_specific_info():
         domain = ele['input']['domain']
         question_type = ele['input']['question_type']
         topic_keyword = ele['input']['topic_keyword']
-        question = '    '.join(parse_korean_list(ele['input']['question'].replace('\\t', ')').replace('\\n', '\n')))
+        question = '   '.join(parse_korean_list(ele['input']['question'].replace('\\t', ')').replace('\\n', '\n')))
 
         answer = ele['output']['answer'] if 'output' in ele else None
         if answer:

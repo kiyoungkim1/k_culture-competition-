@@ -29,7 +29,7 @@ for item in data:
     if ':' in extracted_result:  # '"answer": ~~~' 이런식으로 답이 나오는 경우가 있음
         extracted_result = extracted_result.split(':')[-1]
 
-    item["output"] = {"answer": extracted_result}
+    item["output"] = {"answer": extracted_result.strip()}
 
 # 결과 출력 또는 저장
 with open('output_cleaned.json', 'w', encoding='utf-8') as f:
