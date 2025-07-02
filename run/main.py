@@ -45,6 +45,7 @@ def main(args):
     if args.use_auth_token:
         model_kwargs["use_auth_token"] = args.use_auth_token
 
+    # model = None
     model = AutoModelForCausalLM.from_pretrained(
         args.model_id,
         trust_remote_code=True,

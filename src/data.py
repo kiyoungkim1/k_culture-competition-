@@ -31,7 +31,7 @@ class CustomDataset(Dataset):
                 question = inp['question'].split('\\n')[0].strip()
 
                 # choices
-                choice_text = inp['question'].replace("\\t", ") ").split('\\n')[-1]
+                choice_text = inp['question'].replace("\\t", ")").split('\\n')[-1]
                 choices = re.findall(r'\d+\)\s*.*?(?=\s+\d+\)|$)', choice_text)
                 choices_list = [c.strip() for c in choices]
                 choices = '   '.join(choices_list)
@@ -108,6 +108,7 @@ topic_keyword는 {}입니다.
 상기 내용을 참고하여 최종적으로 2단어 이내의 답변을 <result> </result> 사이에 작성해 주세요. 맞으면 <solve>에서 작성한 답변을, 아니면 <eval>의 피드백을 바탕으로 정답을 새로 작성해 주세요. 2단어 이내로 작성해야합니다.
 일반적인 지식이 아니라, 반드시 전통적인 한국의 문화를 기반으로 풀어야 합니다.""".format(domain_info, inp['question'], inp['topic_keyword'])
 
+            # print(chat)
             return chat
 
         for example in data:
