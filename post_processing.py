@@ -9,17 +9,20 @@ with open('result.json', 'r', encoding='utf-8') as f:
 for item in data:
     answer_text = item.get("output", {}).get("answer", "")
 
-    if "</result>" in answer_text:
+    if "<result>" in answer_text and "</result>" in answer_text:
         result_match = re.search(r"<result>\s*(.*?)\s*</result>", answer_text, re.DOTALL)
 
         if result_match:
             extracted_result = result_match.group(1).strip()
         else:
-            print("ERROR")
+            print("ERROR", item['id'])
             extracted_result = "# ERROR"
 
-    elif "<result>" in answer_text: # <result>는 있는데 </result>는 없는 경우가 있음
+    elif "<result>" in answer_text and "</result>" not in answer_text: # <result>는 있는데 </result>는 없는 경우가 있음
         extracted_result = answer_text.split('<result>')[-1].strip()
+
+    elif "<result>" not in answer_text and "</result>" in answer_text:
+        extracted_result = answer_text.split('</result>')[-1].strip()
 
     else:
         extracted_result = answer_text.split('\n')[-1].strip()
