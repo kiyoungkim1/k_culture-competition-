@@ -2,7 +2,7 @@ from transformers import AutoTokenizer
 from hqq.engine.hf import HQQModelForCausalLM
 
 # 모델 ID
-model_id = "skt/A.X-4.0"
+model_id = "UNIVA-Bllossom/DeepSeek-llama3.3-Bllossom-70B"
 
 # 토크나이저 로딩
 tokenizer = AutoTokenizer.from_pretrained(model_id, use_fast=True)
