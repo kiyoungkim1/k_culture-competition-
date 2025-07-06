@@ -11,6 +11,10 @@ docker exec -it k_culture /bin/bash
 docker stop k_culture
 docker start -i k_culture
 
+# quantization 시키기: https://github.com/intel/auto-round
+pip install auto-round
+
+
 # 실행
 (환경 테스트) python -m run.main  --input resource/QA/sample_qa.json  --output result.json   --model_id naver-hyperclovax/HyperCLOVAX-SEED-Text-Instruct-0.5B   --device cuda:0
 python -m run.main  --input resource/data_given/korean_culture_qa_V1.0_test.json  --output result.json   --model_id naver-hyperclovax/HyperCLOVAX-SEED-Text-Instruct-0.5B   --device cuda:1
@@ -23,6 +27,14 @@ python -m run.main  --input resource/data_given/korean_culture_qa_V1.0_test.json
 
 # DeepSeek-llama3.3-Bllossom-70B  --> 2bit로 양자화 (chatGPT에서 hf 모델 불러와서 양자화 후 업로드 하는 방법 나옴)
 python -m run.main  --input resource/data_given/korean_culture_qa_V1.0_test.json  --output result.json   --model_id UNIVA-Bllossom/DeepSeek-llama3.3-Bllossom-70B --device cuda:0
+
+# skt/A.X-4.0
+python -m run.main  --input resource/data_given/korean_culture_qa_V1.0_test.json  --output result.json   --model_id skt/A.X-4.0 --device cuda:0
+
+
+# 다운 받아져 있는 모델 리스트 보기(ubuntu)
+find ~/.cache/huggingface/hub/ -type d -name "models--*"
+
 
 
 # 평가 데이터 양식
