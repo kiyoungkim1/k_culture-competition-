@@ -4,42 +4,30 @@ import re
 import torch
 from torch.utils.data import Dataset
 
-from src.data_preprocessing import get_domain_specific_info
+from src.data_example import get_domain_specific_info
 
 domain_specific_info = get_domain_specific_info()
 
-class CustomDataset(Dataset):
-    def __init__(self, fname, tokenizer):
-        IGNORE_INDEX=-100
-        self.inp = []
-        self.label = []
+def make_chat(inp):
+    # domain
+    domain = inp['domain']
+    domain_info = domain_specific_info[domain]
+    ## TODO: domain info가 문제의 키워드 들이랑은 다른 지식인데 들어가는게 꼭 좋은지 모르겠음. 패턴을 가르쳐 주는게 아니기 때문에 많이 알려주는게 의미가 없을 듯.
 
-        PROMPT = """당신은 한국의 전통 문화와 역사, 문법, 사회, 과학기술 등 다양한 분야에 대해 잘 알고 있는 유능한 AI 어시스턴트 입니다.
-무의미하게 동일한 단어나 문장을 반복하여 작성하지 말아주세요."""
+    if inp['question_type'] == '선다형':
+        # question
+        question = inp['question'].split('\\n')[0].strip()
 
-        with open(fname, encoding='utf-8') as f:
-            data = json.load(f)
+        # choices
+        choice_text = inp['question'].replace("\\t", ")").split('\\n')[-1]
+        choices = re.findall(r'\d+\)\s*.*?(?=\s+\d+\)|$)', choice_text)
+        choices_list = [c.strip() for c in choices]
+        choices = '   '.join(choices_list)
 
-        def make_chat(inp):
-            # domain
-            domain = inp['domain']
-            domain_info = domain_specific_info[domain]
-            ## TODO: domain info가 문제의 키워드 들이랑은 다른 지식인데 들어가는게 꼭 좋은지 모르겠음. 패턴을 가르쳐 주는게 아니기 때문에 많이 알려주는게 의미가 없을 듯.
-
-            if inp['question_type'] == '선다형':
-                # question
-                question = inp['question'].split('\\n')[0].strip()
-
-                # choices
-                choice_text = inp['question'].replace("\\t", ")").split('\\n')[-1]
-                choices = re.findall(r'\d+\)\s*.*?(?=\s+\d+\)|$)', choice_text)
-                choices_list = [c.strip() for c in choices]
-                choices = '   '.join(choices_list)
-
-
-                chat = """질문을 잘 읽고 한국사람으로써 가장 적절한 답변을 찾아주세요. 답변은 숫자만 작성해야합니다.
+        chat = """질문을 잘 읽고 한국사람으로써 가장 적절한 답변을 찾아주세요. 답변은 숫자만 작성해야합니다.
 예시는 해당 분야의 한국 문화에 대한 문제를 정확하게 푼 것이다.
 이와 같이 한국 문화를 기반으로 주어진 문제를 풀어야 한다.
+주어진 선택지 중 가장 질문에 가까운 답을 찾아야 한다.
 
 <예시>
 질문: 다음 한국의 전통 놀이 중 '조선시대'에 행한 놀이는?
@@ -55,14 +43,15 @@ class CustomDataset(Dataset):
 {}
 
 topic_keyword는 {}입니다.
-먼저 <background> </background> 사이에 질문과 관련하여 중요한 정보 3가지를 총 300자 이내, 질문과 관련하여 선택지의 1, 2, 3, 4번의 중요한 정보를 작성하고 각 선택지가 한국 사람의 입장에서 ㅎ질문의 정답에 가장 적합한지에 대해 각각 150자로 작성해 주세요.
+먼저 <background> </background> 사이에 질문과 관련하여 중요한 정보 3가지를 총 300자 이내, 질문과 관련하여 선택지의 1, 2, 3, 4번의 중요한 정보를 작성하고 각 선택지가 한국 사람의 입장에서 질문의 정답에 가장 적합한지에 대해 각각 150자로 작성해 주세요.
+먼저 <background> </background> 사이에 질문과 관련하여 중요한 정보 3가지를 총 300자 이내, 질문과 관련하여 선택지의 1, 2, 3, 4번의 중요한 정보를 작성하고 각 선택지가 한국 사람의 입장에서 질문의 정답에 가장 적합한지에 대해 각각 150자로 작성해 주세요.
 <background>정보를 바탕으로 <solve> </solve> 사이에 답변에 해당하는 숫자를 작성하고 그 이유에 대해 작성하세요.
 이 후 <eval> </eval>에서 <solve>에서 작성한 답이 맞는지 평가하고, 맞다면 왜 맞는지, 틀리다면 왜 틀렸는지에 대해 간단히 작성하세요.
 상기 내용을 바탕으로 최종 답변인 숫자는 <result> </result> 사이에 작성해 주세요. 맞으면 <solve>에서 작성한 숫자를, 아니면 <eval>의 피드백을 바탕으로 정답을 새로 작성해 주세요. 숫자만 작성해야 합니다.
 일반적인 지식이 아니라, 반드시 전통적인 한국의 문화를 기반으로 풀어야 합니다.""".format(domain_info, question, choices, inp['topic_keyword'])
 
-            elif inp['question_type'] == '서술형':
-                chat = """[질문]을 잘 읽고 한국사람으로써 가장 적절한 답변을 작성해 주세요. 질문에 대한 답변을 완성된 문장으로 서술하시오.
+    elif inp['question_type'] == '서술형':
+        chat = """[질문]을 잘 읽고 한국사람으로써 가장 적절한 답변을 작성해 주세요. 질문에 대한 답변을 완성된 문장으로 서술하시오.
 예시는 해당 분야의 한국 문화에 대한 문제를 정확하게 푼 것으로 서술형 답변은 350~400글자 사이로 작성해야 합니다.
 이와 같이 한국 문화를 기반으로 주어진 문제를 풀어야 한다.
 
@@ -85,8 +74,8 @@ topic_keyword는 {}입니다.
 답변은 반드시 한국어로 작성해야 합니다. 350~400자 사이의 줄글로 작성해야 합니다.
 일반적인 지식이 아니라, 반드시 전통적인 한국의 문화를 기반으로 풀어야 합니다.""".format(domain_info, inp['question'], inp['topic_keyword'])
 
-            elif inp['question_type'] == '단답형':
-                chat = """[질문]을 잘 읽고 한국사람으로써 가장 적절한 답변을 작성해 주세요. 질문에 대한 답을 2단어 이내로 간단히 답하시오.
+    elif inp['question_type'] == '단답형':
+        chat = """[질문]을 잘 읽고 한국사람으로써 가장 적절한 답변을 작성해 주세요. 질문에 대한 답을 2단어 이내로 간단히 답하시오.
 예시는 해당 분야의 한국 문화에 대한 문제를 정확하게 푼 것이다.
 이와 같이 한국 문화를 기반으로 주어진 문제를 풀어야 한다.
 
@@ -108,8 +97,98 @@ topic_keyword는 {}입니다.
 상기 내용을 참고하여 최종적으로 2단어 이내의 답변을 <result> </result> 사이에 작성해 주세요. 맞으면 <solve>에서 작성한 답변을, 아니면 <eval>의 피드백을 바탕으로 정답을 새로 작성해 주세요. 2단어 이내로 작성해야합니다.
 일반적인 지식이 아니라, 반드시 전통적인 한국의 문화를 기반으로 풀어야 합니다.""".format(domain_info, inp['question'], inp['topic_keyword'])
 
-            # print(chat)
-            return chat
+    message = [
+        {
+            "role": "system",
+            "content": """당신은 한국의 전통 문화와 역사, 문법, 사회, 과학기술 등 다양한 분야에 대해 잘 알고 있는 유능한 한국 문화 박사입니다.
+
+기존 학술 자료 또는 백과사전 기준으로 질문에 답해주세요.
+확인된 사실 위주로 작성해 주세요. 가설이나 개인 의견은 포함하지 마세요.
+출처 기반 정보만 활용해야 하며, 추론은 생략해 주세요.
+무의미하게 동일한 단어나 문장을 반복하여 작성하지 말아주세요."""
+        },
+        {"role": "user", "content": chat},
+    ]
+
+    return message
+
+
+def make_validation(inp, output):
+    if inp['question_type'] == '선다형':
+        # question
+        question = inp['question'].split('\\n')[0].strip()
+
+        # choices
+        choice_text = inp['question'].replace("\\t", ")").split('\\n')[-1]
+        choices = re.findall(r'\d+\)\s*.*?(?=\s+\d+\)|$)', choice_text)
+        choices_list = [c.strip() for c in choices]
+        choices = '   '.join(choices_list)
+
+        chat = """한국 문화 박사로써 질문에 대한 선다형 문제 답변의 번호를 작성한 것이다.
+주어진 선택지 중 가장 질문에 가까운 답을 찾은 것이다.
+
+질문: {}
+{}
+답변: {}
+
+먼저 <thinking> </thinking> tag 사이에 해당 질문에 대한 답변이 정확하다면 넘어가고, 정확하지 않다면 출처를 가져와 왜 정확하지 않고 실제 답변은 무엇인지 번호로 작성해 주세요.
+상기 내용을 바탕으로 최종 답변인 숫자는 <result> </result> 사이에 작성해 주세요. 맞으면 원래 답변에서 작성한 숫자를, 아니면 <thinking>의 결과를 바탕으로 정답을 새로 작성해 주세요. 숫자만 작성해야 합니다.
+일반적인 지식이 아니라, 반드시 전통적인 한국의 문화를 기반으로 풀어야 합니다.""".format(question, choices, output)
+
+    elif inp['question_type'] == '서술형':
+        chat = """한국 문화 박사로써 질문에 대한 선다형 문제 답변의 번호를 작성한 것이다.
+주어진 선택지 중 가장 질문에 가까운 답을 찾은 것이다.
+
+질문: {}
+답변: {}
+
+먼저 <thinking> </thinking> tag 사이에 해당 질문에 대한 답변이 정확하다면 넘어가고, 정확하지 않다면 출처를 가져와 왜 정확하지 않고 실제 답변은 무엇인지 새로운 답변으로 작성해 주세요.
+상기 내용을 참고하여 최종적으로 완성된 문장의 답변을 <result> </result> 사이에 작성해 주세요. 맞으면 원래의 답변을을, 아니면 <thinking>의 결과를 바탕으로 정답을 새로 작성해 주세요. 답변은 반드시 한국어로 작성해야 합니다. 350~400자 사이의 줄글로 작성해야 합니다.
+일반적인 지식이 아니라, 반드시 전통적인 한국의 문화를 기반으로 풀어야 합니다.""".format(inp['question'], output)
+
+    elif inp['question_type'] == '단답형':
+        chat = """한국 문화 박사로써 질문에 대한 선다형 문제 답변의 번호를 작성한 것이다.
+주어진 선택지 중 가장 질문에 가까운 답을 찾은 것이다.
+
+질문: {}
+답변: {}
+
+먼저 <thinking> </thinking> tag 사이에 해당 질문에 대한 답변이 정확하다면 넘어가고, 정확하지 않다면 출처를 가져와 왜 정확하지 않고 실제 답변은 무엇인지 2단어 이내의 답변으로 작성해 주세요.
+상기 내용을 참고하여 최종적으로 2단어 이내의 답변을 <result> </result> 사이에 작성해 주세요. 맞으면 원래의 답변을, 아니면 <thinking>의 결과를 바탕으로 정답을 새로 작성해 주세요. 2단어 이내로 작성해야합니다.
+일반적인 지식이 아니라, 반드시 전통적인 한국의 문화를 기반으로 풀어야 합니다.""".format(inp['question'], output)
+
+
+    message = [
+        {
+            "role": "system",
+            "content": """당신은 한국의 전통 문화와 역사, 문법, 사회, 과학기술 등 다양한 분야에 대해 잘 알고 있는 유능한 한국 문화 박사입니다.
+
+    기존 학술 자료 또는 백과사전 기준으로 질문에 답해주세요.
+    확인된 사실 위주로 작성해 주세요. 가설이나 개인 의견은 포함하지 마세요.
+    출처 기반 정보만 활용해야 하며, 추론은 생략해 주세요.
+    무의미하게 동일한 단어나 문장을 반복하여 작성하지 말아주세요."""
+        },
+        {"role": "user", "content": chat},
+    ]
+
+    return message
+
+
+class CustomDataset(Dataset):
+    def __init__(self, fname, tokenizer):
+        IGNORE_INDEX=-100
+        self.inp = []
+        self.label = []
+
+        PROMPT = """당신은 한국의 전통 문화와 역사, 문법, 사회, 과학기술 등 다양한 분야에 대해 잘 알고 있는 유능한 한국 문화 박사입니다.
+
+기존 학술 자료 또는 백과사전 기준으로 정리해 주세요.
+확인된 사실 위주로 작성해 주세요. 가설이나 개인 의견은 포함하지 마세요.
+출처 기반 정보만 활용해야 하며, 추론은 생략해 주세요.
+무의미하게 동일한 단어나 문장을 반복하여 작성하지 말아주세요."""
+
+        with open(fname, encoding='utf-8') as f:
+            data = json.load(f)
 
         for example in data:
             user_prompt = make_chat(example["input"])
@@ -117,7 +196,6 @@ topic_keyword는 {}입니다.
                 {"role": "system", "content": PROMPT},
                 {"role": "user", "content": user_prompt},
             ]
-            if False: print(f'[DBG] message: {message}')
      
             source = tokenizer.apply_chat_template(
                 message,
@@ -135,6 +213,7 @@ topic_keyword는 {}입니다.
                 add_special_tokens=False,
                 return_tensors="pt"
             )
+
             target["input_ids"] = target["input_ids"].type(torch.int64)
 
             input_ids = torch.concat((source[0], target["input_ids"][0]))
@@ -148,19 +227,3 @@ topic_keyword는 {}입니다.
     def __getitem__(self, idx):
         return self.inp[idx]
 
-
-class DataCollatorForSupervisedDataset(object):
-    def __init__(self, tokenizer):
-        self.tokenizer = tokenizer
-
-    def __call__(self, instances):
-        input_ids, labels = tuple([instance[key] for instance in instances] for key in ("input_ids", "labels"))
-        input_ids = torch.nn.utils.rnn.pad_sequence(
-            [torch.tensor(ids) for ids in input_ids], batch_first=True, padding_value=self.tokenizer.pad_token_id
-        )
-        labels = torch.nn.utils.rnn.pad_sequence([torch.tensor(lbls) for lbls in labels], batch_first=True, padding_value=-100)
-        return dict(
-            input_ids=input_ids,
-            labels=labels,
-            attention_mask=input_ids.ne(self.tokenizer.pad_token_id),
-        )

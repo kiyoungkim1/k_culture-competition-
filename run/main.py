@@ -8,6 +8,8 @@ from transformers import AutoTokenizer, AutoModelForCausalLM
 from transformers import StoppingCriteria, StoppingCriteriaList
 
 from src.data import CustomDataset
+from src.data import make_chat, make_validation
+from src.post_processing import apply_post_processing
 
 
 # fmt: off
@@ -89,15 +91,26 @@ def main(args):
     # ])
 
     file_test = args.input
-    dataset = CustomDataset(file_test, tokenizer)
-
+    # dataset = CustomDataset(file_test, tokenizer)
+    #
     with open(file_test, "r", encoding='utf8') as f:
         result = json.load(f)
 
-    for idx in tqdm.tqdm(range(len(dataset))):
-        inp = dataset[idx]
+    # for idx in tqdm.tqdm(range(len(dataset))):
+    for idx, example in tqdm.tqdm(enumerate(result)):
+        # 1.1 답변 생성
+        message_chat = make_chat(example["input"])
+
+        source = tokenizer.apply_chat_template(
+            message_chat,
+            add_generation_prompt=True,
+            return_tensors="pt",
+            enable_thinking=False
+        )
+        input_ids = source[0]
+
         outputs = model.generate(
-            inp.to(args.device).unsqueeze(0),
+            input_ids.to(args.device).unsqueeze(0),
             max_new_tokens=1536,
             eos_token_id=tokenizer.eos_token_id, #terminators,
             # stopping_criteria=stop_criteria,
@@ -107,26 +120,50 @@ def main(args):
             top_p=0.8,
             do_sample=True,
         )
+        output_text = tokenizer.decode(outputs[0][input_ids.shape[-1]:], skip_special_tokens=True)
 
-        output_text = tokenizer.decode(outputs[0][inp.shape[-1]:], skip_special_tokens=True)
+        # 1.2 postprocessing
+        output_processed = apply_post_processing(output_text)
 
-        # # 출력에서 "답변: " 접두어 제거
-        # if output_text.startswith("답변: "):
-        #     output_text = output_text[4:].strip()
-        # elif output_text.startswith("답변:"):
-        #     output_text = output_text[3:].strip()
-        # elif output_text.startswith("[답변]"):
-        #     output_text = output_text[4:].strip()
-        # elif output_text.startswith("[답변]\n"):
-        #     output_text = output_text[5:].strip()
-        #
-        # # \n\n 에서 끊기
-        # output_text = output_text.split("\n\n")[0]
+        # 2.1 validation
+        message_val = make_validation(example["input"], output_processed)
 
-        result[idx]["output"] = {"answer": output_text}
+        source = tokenizer.apply_chat_template(
+            message_val,
+            add_generation_prompt=True,
+            return_tensors="pt",
+            enable_thinking=False
+        )
+        input_ids = source[0]
+
+        validation = model.generate(
+            input_ids.to(args.device).unsqueeze(0),
+            max_new_tokens=1024,
+            eos_token_id=tokenizer.eos_token_id, #terminators,
+            # stopping_criteria=stop_criteria,
+            pad_token_id=tokenizer.eos_token_id,
+            repetition_penalty=0.8,
+            temperature=0.3,
+            top_p=0.8,
+            do_sample=True,
+        )
+
+        # 2.2 post_processing
+        output_final = apply_post_processing(validation)
+
+
+        result[idx]["output"] = {
+            "raw": output_text,
+            "answer_before_validation": output_processed,
+            "validation": validation,
+            "answer": output_final,
+        }
 
         # log
-        print(output_text)
+        print("output_text", output_text)
+        print("output_processed", output_processed)
+        print("validation", validation)
+        print("output_processed", output_processed)
         check_vram(args.device)
 
     with open(args.output, "w", encoding="utf-8") as f:
