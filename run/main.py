@@ -164,7 +164,7 @@ def main(args):
         print("output_text", output_text)
         print("output_processed", output_processed)
         print("output_validation", output_validation)
-        print("output_processed", output_processed)
+        print("output_final", output_final)
         check_vram(args.device)
 
     with open(args.output, "w", encoding="utf-8") as f:
