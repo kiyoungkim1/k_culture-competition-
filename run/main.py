@@ -136,7 +136,7 @@ def main(args):
         )
         input_ids = source[0]
 
-        output_validation = model.generate(
+        outputs = model.generate(
             input_ids.to(args.device).unsqueeze(0),
             max_new_tokens=1024,
             eos_token_id=tokenizer.eos_token_id, #terminators,
@@ -147,23 +147,23 @@ def main(args):
             top_p=0.8,
             do_sample=True,
         )
-        output_validataion = tokenizer.decode(output_validation[0][input_ids.shape[-1]:], skip_special_tokens=True)
+        output_validation = tokenizer.decode(outputs[0][input_ids.shape[-1]:], skip_special_tokens=True)
 
         # 2.2 post_processing
-        output_final = apply_post_processing(output_validataion)
+        output_final = apply_post_processing(output_validation)
 
 
         result[idx]["output"] = {
             "raw": output_text,
             "answer_before_validation": output_processed,
-            "validation": output_validataion,
+            "validation": output_validation,
             "answer": output_final,
         }
 
         # log
         print("output_text", output_text)
         print("output_processed", output_processed)
-        print("validation", validation)
+        print("output_validation", output_validation)
         print("output_processed", output_processed)
         check_vram(args.device)
 
