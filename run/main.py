@@ -7,7 +7,6 @@ import numpy
 from transformers import AutoTokenizer, AutoModelForCausalLM
 from transformers import StoppingCriteria, StoppingCriteriaList
 
-from src.data import CustomDataset
 from src.data import make_chat, make_validation
 from src.post_processing import apply_post_processing
 
@@ -91,8 +90,6 @@ def main(args):
     # ])
 
     file_test = args.input
-    # dataset = CustomDataset(file_test, tokenizer)
-    #
     with open(file_test, "r", encoding='utf8') as f:
         result = json.load(f)
 
