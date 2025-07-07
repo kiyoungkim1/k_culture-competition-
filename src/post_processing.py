@@ -47,12 +47,16 @@ def get_result_excel(json_path):
             'answer({})'.format(json_path): answer
         })
 
-    pd.DataFrame(data_list).to_excel('json_result_{}.xlsx'.format(json_path.split('.')[0]), index=False)
-    # pd.DataFrame(data_list).to_excel('json_result.xlsx', index=False)
+    if 'korean_culture_qa_V1.0' in json_path:
+        pd.DataFrame(data_list).to_excel('json_result.xlsx', index=False)
+    else:
+        pd.DataFrame(data_list).to_excel('json_result_{}.xlsx'.format(json_path.split('.')[0]), index=False)
+
 
 if __name__ == '__main__':
-    # get_result_excel('resource/data_given/korean_culture_qa_V1.0_dev.json')
+    get_result_excel('resource/data_given/korean_culture_qa_V1.0_dev.json')
     get_result_excel('result_exaone_32B.json')
+    get_result_excel('result_deepseek32B.json')
 
 
 # python src/post_processing.py

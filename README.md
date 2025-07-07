@@ -23,7 +23,7 @@ python -m run.main  --input resource/data_given/korean_culture_qa_V1.0_test.json
 nohup python -m run.main --input resource/data_given/korean_culture_qa_V1.0_dev.json  --output result_deepseek32B.json  --model_id deepseek-ai/DeepSeek-R1-Distill-Qwen-32B --device cuda:1 > out1 &
 
 ### Exaone3.5 32B (--> 길이가 길어지면 24GB 넘기도 함)
-nohup python -m run.main  --input resource/data_given/korean_culture_qa_V1.0_dev.json  --output result_exaone_32B.json  --model_id LGAI-EXAONE/EXAONE-3.5-32B-Instruct --device cuda:2 < out2 &
+nohup python -m run.main  --input resource/data_given/korean_culture_qa_V1.0_dev.json  --output result_exaone_32B.json  --model_id LGAI-EXAONE/EXAONE-3.5-32B-Instruct --device cuda:2 > out2 &
 
 # DeepSeek-llama3.3-Bllossom-70B  --> 2bit로 양자화 (chatGPT에서 hf 모델 불러와서 양자화 후 업로드 하는 방법 나옴)
 python -m run.main  --input resource/data_given/korean_culture_qa_V1.0_dev.json  --output result_bllossom70B.json  --model_id UNIVA-Bllossom/DeepSeek-llama3.3-Bllossom-70B --device cuda:1

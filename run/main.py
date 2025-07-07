@@ -1,6 +1,7 @@
 import argparse
 import json
 import tqdm
+import re
 
 import torch
 import numpy
@@ -99,11 +100,18 @@ def main(args):
 
         # keyword가 정답인 경우
         if question_type == '선다형':
-            if example['input']['topic_keyword'] in example['input']['question']:
-                output_text = example['input']['topic_keyword']
-                output_processed = example['input']['topic_keyword']
-                output_validation = example['input']['topic_keyword']
-                output_final = example['input']['topic_keyword']
+            choice_text = example['input']['question'].replace("\\t", ")").split('\\n')[-1]
+            choices = re.findall(r'\d+\)\s*.*?(?=\s+\d+\)|$)', choice_text)
+            choices_list = [c.strip() for c in choices]
+            choices = '   '.join(choices_list)
+
+            if example['input']['topic_keyword'] in choices:
+                answer_idx = choices_list.index(example['input']['topic_keyword'].strip())+1
+
+                output_text = answer_idx
+                output_processed = answer_idx
+                output_validation = answer_idx
+                output_final = answer_idx
 
                 get_answer = True
 
@@ -118,14 +126,12 @@ def main(args):
 출처 기반 정보만 활용해야 하며, 추론은 생략해 주세요."""
                 },
                 {"role": "user", "content": """[질문]을 잘 읽고 한국사람으로써 가장 적절한 답변을 작성한 것입니다.
-이와 같이 한국 문화를 기반으로 주어진 문제를 풀어야 한다. 현대의 한반도 중 남한의 문화를 바탕으로 해야합니다.
 
 질문: {}
 답변: {}
 
-해당 질문에 대한 답변이 맞나요? 너무 일반적인 답이 아니고, 50%이상 맞다면 <result> </result> tag안에 해당 답변을 그대로 작성해 주세요.
-질문에 대한 답변으로 매우 적절하지 않다면 <result> </result> tag 안에 '적절하지 않음'이라고 작성해 주세요.
-답변은 반드시 한국어로 작성해야 합니다. 반복하여 동일한 단어나 문장은 생성하지 말고 tag 내 결과 이외 다른 글은 작성하지 마세요.""".format(example['input']['question'], example['input']['topic_keyword'])},
+해당 질문에 대한 답변이 맞나요? 답이 맞다면 <result> </result> tag안에 해당 답변을 그대로 작성해 주세요.
+질문에 대한 답변이 구체적이지 않다면 <result> </result> tag 안에 '적절하지 않음'이라고 작성해 주세요.""".format(example['input']['question'], example['input']['topic_keyword'])},
             ]
 
             source = tokenizer.apply_chat_template(
