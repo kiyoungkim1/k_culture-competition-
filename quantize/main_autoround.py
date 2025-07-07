@@ -1,13 +1,9 @@
-from auto_round import AutoRoundForCausalLM, AutoRoundTokenizer
+from transformers import AutoModelForCausalLM, AutoTokenizer
 
-# 저장된 양자화 모델 경로
-output_dir = "./tmp_autoround"
-
-# 로딩
-model = AutoRoundForCausalLM.from_quantized(output_dir)
-tokenizer = AutoRoundTokenizer.from_pretrained(output_dir)
-
-# 텍스트 생성
-inputs = tokenizer("안녕", return_tensors="pt")
-outputs = model.generate(**inputs)
-print(tokenizer.decode(outputs[0]))
+quantized_model_path = "./tmp_autoround"
+model = AutoModelForCausalLM.from_pretrained(quantized_model_path,
+                                             device_map="auto", torch_dtype="auto")
+tokenizer = AutoTokenizer.from_pretrained(quantized_model_path)
+text = "호랑이로 삼행시 지어줘"
+inputs = tokenizer(text, return_tensors="pt").to(model.device)
+print(tokenizer.decode(model.generate(**inputs, max_new_tokens=256)[0]))
