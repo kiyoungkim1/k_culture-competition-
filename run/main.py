@@ -100,10 +100,10 @@ def main(args):
         # keyword가 정답인 경우
         if question_type == '선다형':
             if example['input']['topic_keyword'] in example['input']['question']:
-                output_text = answer_in_it
-                output_processed = answer_in_it
-                output_validation = answer_in_it
-                output_final = answer_in_it
+                output_text = example['input']['topic_keyword']
+                output_processed = example['input']['topic_keyword']
+                output_validation = example['input']['topic_keyword']
+                output_final = example['input']['topic_keyword']
 
                 get_answer = True
 
