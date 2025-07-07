@@ -20,19 +20,19 @@ pip install auto-round
 python -m run.main  --input resource/data_given/korean_culture_qa_V1.0_test.json  --output result.json   --model_id naver-hyperclovax/HyperCLOVAX-SEED-Text-Instruct-0.5B   --device cuda:1
 
 #### 딥시크 32B
-python -m run.main --input resource/data_given/korean_culture_qa_V1.0_dev.json  --output result_deepseek32B.json   --model_id deepseek-ai/DeepSeek-R1-Distill-Qwen-32B --device cuda:1
+nohup python -m run.main --input resource/data_given/korean_culture_qa_V1.0_dev.json  --output result_deepseek32B.json  --model_id deepseek-ai/DeepSeek-R1-Distill-Qwen-32B --device cuda:1 > out1 &
 
 ### Exaone3.5 32B (--> 길이가 길어지면 24GB 넘기도 함)
-python -m run.main  --input resource/data_given/korean_culture_qa_V1.0_dev.json  --output result_exaone_32B.json   --model_id LGAI-EXAONE/EXAONE-3.5-32B-Instruct --device cuda:2
+nohup python -m run.main  --input resource/data_given/korean_culture_qa_V1.0_dev.json  --output result_exaone_32B.json  --model_id LGAI-EXAONE/EXAONE-3.5-32B-Instruct --device cuda:2 < out2 &
 
 # DeepSeek-llama3.3-Bllossom-70B  --> 2bit로 양자화 (chatGPT에서 hf 모델 불러와서 양자화 후 업로드 하는 방법 나옴)
-python -m run.main  --input resource/data_given/korean_culture_qa_V1.0_dev.json  --output result_bllossom70B.json   --model_id UNIVA-Bllossom/DeepSeek-llama3.3-Bllossom-70B --device cuda:1
+python -m run.main  --input resource/data_given/korean_culture_qa_V1.0_dev.json  --output result_bllossom70B.json  --model_id UNIVA-Bllossom/DeepSeek-llama3.3-Bllossom-70B --device cuda:1
 
 # gemma 27B(인증 필요 필요)
-python -m run.main  --input resource/data_given/korean_culture_qa_V1.0_test.json  --output result_gemma27B.json   --model_id google/gemma-3-27b-it --device cuda:1
+python -m run.main  --input resource/data_given/korean_culture_qa_V1.0_test.json  --output result_gemma27B.json  --model_id google/gemma-3-27b-it --device cuda:0
 
 # skt/A.X-4.0
-python -m run.main  --input resource/data_given/korean_culture_qa_V1.0_dev.json  --output result_ax70B.json   --model_id skt/A.X-4.0 --device cuda:3
+nohup python -m run.main  --input resource/data_given/korean_culture_qa_V1.0_dev.json  --output result_ax70B.json  --model_id skt/A.X-4.0 --device cuda:3 > out3 &
 
 
 # 다운 받아져 있는 모델 리스트 보기(ubuntu)
