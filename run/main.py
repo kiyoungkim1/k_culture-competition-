@@ -93,61 +93,127 @@ def main(args):
     with open(file_test, "r", encoding='utf8') as f:
         result = json.load(f)
 
-    # for idx in tqdm.tqdm(range(len(dataset))):
     for idx, example in tqdm.tqdm(enumerate(result)):
-        # 1.1 답변 생성
-        message_chat = make_chat(example["input"])
+        get_answer = False
+        question_type = example['input']['question_type']
 
-        source = tokenizer.apply_chat_template(
-            message_chat,
-            add_generation_prompt=True,
-            return_tensors="pt",
-            enable_thinking=False
-        )
-        input_ids = source[0]
+        # keyword가 정답인 경우
+        if question_type == '선다형':
+            if example['input']['topic_keyword'] in example['input']['question']:
+                output_text = answer_in_it
+                output_processed = answer_in_it
+                output_validation = answer_in_it
+                output_final = answer_in_it
 
-        outputs = model.generate(
-            input_ids.to(args.device).unsqueeze(0),
-            max_new_tokens=1536,
-            eos_token_id=tokenizer.eos_token_id, #terminators,
-            # stopping_criteria=stop_criteria,
-            pad_token_id=tokenizer.eos_token_id,
-            repetition_penalty=0.8,
-            temperature=0.3,
-            top_p=0.8,
-            do_sample=True,
-        )
-        output_text = tokenizer.decode(outputs[0][input_ids.shape[-1]:], skip_special_tokens=True)
+                get_answer = True
 
-        # 1.2 postprocessing
-        output_processed = apply_post_processing(output_text)
+        elif question_type == '단답형':
+            message = [
+                {
+                    "role": "system",
+                    "content": """당신은 한국의 전통 문화와 역사, 문법, 사회, 과학기술 등 다양한 분야에 대해 잘 알고 있는 유능한 한국 문화 박사입니다.
 
-        # 2.1 validation
-        message_val = make_validation(example["input"], output_processed)
+기존 학술 자료 또는 백과사전 기준으로 질문에 답해주세요.
+확인된 사실 위주로 작성해 주세요. 가설이나 개인 의견은 포함하지 마세요.
+출처 기반 정보만 활용해야 하며, 추론은 생략해 주세요."""
+                },
+                {"role": "user", "content": """[질문]을 잘 읽고 한국사람으로써 가장 적절한 답변을 작성한 것입니다.
+이와 같이 한국 문화를 기반으로 주어진 문제를 풀어야 한다. 현대의 한반도 중 남한의 문화를 바탕으로 해야합니다.
 
-        source = tokenizer.apply_chat_template(
-            message_val,
-            add_generation_prompt=True,
-            return_tensors="pt",
-            enable_thinking=False
-        )
-        input_ids = source[0]
+질문: {}
+답변: {}
 
-        outputs = model.generate(
-            input_ids.to(args.device).unsqueeze(0),
-            max_new_tokens=1024,
-            eos_token_id=tokenizer.eos_token_id, #terminators,
-            # stopping_criteria=stop_criteria,
-            pad_token_id=tokenizer.eos_token_id,
-            repetition_penalty=0.8,
-            temperature=0.3,
-            top_p=0.8,
-            do_sample=True,
-        )
-        output_validation = tokenizer.decode(outputs[0][input_ids.shape[-1]:], skip_special_tokens=True)
+해당 질문에 대한 답변이 맞나요? 너무 일반적인 답이 아니고, 50%이상 맞다면 <result> </result> tag안에 해당 답변을 그대로 작성해 주세요.
+질문에 대한 답변으로 매우 적절하지 않다면 <result> </result> tag 안에 '적절하지 않음'이라고 작성해 주세요.
+답변은 반드시 한국어로 작성해야 합니다. 반복하여 동일한 단어나 문장은 생성하지 말고 tag 내 결과 이외 다른 글은 작성하지 마세요.""".format(example['input']['question'], example['input']['topic_keyword'])},
+            ]
 
-        # 2.2 post_processing
-        output_final = apply_post_processing(output_validation)
+            source = tokenizer.apply_chat_template(
+                message,
+                add_generation_prompt=True,
+                return_tensors="pt",
+                enable_thinking=False
+            )
+            input_ids = source[0]
+
+            outputs = model.generate(
+                input_ids.to(args.device).unsqueeze(0),
+                max_new_tokens=512,
+                eos_token_id=tokenizer.eos_token_id, #terminators,
+                # stopping_criteria=stop_criteria,
+                pad_token_id=tokenizer.eos_token_id,
+                repetition_penalty=0.8,
+                temperature=0.3,
+                top_p=0.8,
+                do_sample=True,
+            )
+            output_text = tokenizer.decode(outputs[0][input_ids.shape[-1]:], skip_special_tokens=True)
+
+            # 1.2 postprocessing
+            output_processed = apply_post_processing(output_text)
+
+            if example['input']['topic_keyword'] in output_processed:
+                output_text = example['input']['topic_keyword']
+                output_processed = example['input']['topic_keyword']
+                output_validation = example['input']['topic_keyword']
+                output_final = example['input']['topic_keyword']
+                get_answer = True
+
+        # keyword가 답이 아닌 경우
+        if get_answer == False:
+            # 1.1 답변 생성
+            message_chat = make_chat(example["input"])
+
+            source = tokenizer.apply_chat_template(
+                message_chat,
+                add_generation_prompt=True,
+                return_tensors="pt",
+                enable_thinking=False
+            )
+            input_ids = source[0]
+
+            outputs = model.generate(
+                input_ids.to(args.device).unsqueeze(0),
+                max_new_tokens=1536,
+                eos_token_id=tokenizer.eos_token_id, #terminators,
+                # stopping_criteria=stop_criteria,
+                pad_token_id=tokenizer.eos_token_id,
+                repetition_penalty=0.8,
+                temperature=0.3,
+                top_p=0.8,
+                do_sample=True,
+            )
+            output_text = tokenizer.decode(outputs[0][input_ids.shape[-1]:], skip_special_tokens=True)
+
+            # 1.2 postprocessing
+            output_processed = apply_post_processing(output_text)
+
+            # 2.1 validation
+            message_val = make_validation(example["input"], output_processed)
+
+            source = tokenizer.apply_chat_template(
+                message_val,
+                add_generation_prompt=True,
+                return_tensors="pt",
+                enable_thinking=False
+            )
+            input_ids = source[0]
+
+            outputs = model.generate(
+                input_ids.to(args.device).unsqueeze(0),
+                max_new_tokens=1024,
+                eos_token_id=tokenizer.eos_token_id, #terminators,
+                # stopping_criteria=stop_criteria,
+                pad_token_id=tokenizer.eos_token_id,
+                repetition_penalty=0.8,
+                temperature=0.3,
+                top_p=0.8,
+                do_sample=True,
+            )
+            output_validation = tokenizer.decode(outputs[0][input_ids.shape[-1]:], skip_special_tokens=True)
+
+            # 2.2 post_processing
+            output_final = apply_post_processing(output_validation)
 
 
         result[idx]["output"] = {

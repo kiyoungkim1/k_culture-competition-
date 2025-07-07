@@ -38,7 +38,7 @@ def get_result_excel(json_path):
     data_list = []
     for ele in json_data:
         id = ele['id']
-        answer_before_validation = ele['output']['answer_before_validation']
+        answer_before_validation = ele['output']['answer_before_validation'] if 'answer_before_validation' in ele['output'] else None
         answer = ele['output']['answer']
 
         data_list.append({
@@ -48,10 +48,11 @@ def get_result_excel(json_path):
         })
 
     pd.DataFrame(data_list).to_excel('json_result_{}.xlsx'.format(json_path.split('.')[0]), index=False)
+    # pd.DataFrame(data_list).to_excel('json_result.xlsx', index=False)
 
 if __name__ == '__main__':
-    # get_result_excel('result.json')
-    get_result_excel('result_deepseekR1_32B.json')
+    # get_result_excel('resource/data_given/korean_culture_qa_V1.0_dev.json')
+    get_result_excel('result_exaone_32B.json')
 
 
 # python src/post_processing.py
