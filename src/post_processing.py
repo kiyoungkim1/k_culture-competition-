@@ -1,5 +1,6 @@
 import json
 import re
+import pandas as pd
 
 def apply_post_processing(answer_text):
     if "<result>" in answer_text and "</result>" in answer_text:
@@ -29,21 +30,28 @@ def apply_post_processing(answer_text):
 
     return extracted_result
 
+
+def get_result_excel(json_path):
+    with open(json_path, 'r', encoding='utf-8') as f:
+        json_data = json.load(f)
+
+    data_list = []
+    for ele in json_data:
+        id = ele['id']
+        answer_before_validation = ele['output']['answer_before_validation']
+        answer = ele['output']['answer']
+
+        data_list.append({
+            'id': id,
+            'before_valid({})'.format(json_path): answer_before_validation,
+            'answer({})'.format(json_path): answer
+        })
+
+    pd.DataFrame(data_list).to_excel('json_result_{}.xlsx'.format(json_path.split('.')[0]), index=False)
+
 if __name__ == '__main__':
-    # JSON 데이터 예시 (변수명 data에 리스트 형태로 저장)
-    with open('../result.json', 'r', encoding='utf-8') as f:
-        data = json.load(f)
+    # get_result_excel('result.json')
+    get_result_excel('result_deepseekR1_32B.json')
 
-    # <result> 내부의 텍스트를 추출하고 output 필드를 갱신
-    for item in data:
-        answer_text = item.get("output", {}).get("answer", "")
-
-        extracted_result = apply_post_processing(answer_text)
-
-        item["output"] = {"answer": extracted_result}
-
-    # 결과 출력 또는 저장
-    with open('output_cleaned.json', 'w', encoding='utf-8') as f:
-        json.dump(data, f, ensure_ascii=False, indent=4)
 
 # python src/post_processing.py

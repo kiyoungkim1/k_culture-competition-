@@ -63,8 +63,8 @@ topic keyword는 {}입니다. topic keword가 답일 수도 있습니다.
 <background>내용을 바탕으로 <solve> </solve> 사이에 답변에 해당하는 답을 완성된 문장으로 작성하세요.
 이 후 <eval> </eval>에서 그 답이 맞는지 평가하고, 맞다면 왜 맞는지, 틀리다면 왜 틀렸는지에 대해 간단히 작성하세요.
 상기 내용을 참고하여 최종적으로 완성된 문장의 답변을 <result> </result> 사이에 작성해 주세요. 맞으면 <solve>에서 작성한 글을, 아니면 <eval>의 피드백을 바탕으로 정답을 새로 작성해 주세요.
-답변은 반드시 한국어로 작성해야 합니다. 350~400자 사이의 줄글로 작성해야 합니다.
-일반적인 지식이 아니라, 반드시 전통적인 한국의 문화를 기반으로 풀어야 합니다.""".format(inp['question'], inp['topic_keyword'])
+일반적인 지식이 아니라, 반드시 전통적인 한국의 문화를 기반으로 풀어야 합니다.
+답변은 반드시 한국어로 작성해야 합니다. 350~400자 사이의 줄글로 작성해야 합니다.""".format(inp['question'], inp['topic_keyword'])
 
     elif inp['question_type'] == '단답형':
         chat = """[질문]을 잘 읽고 한국사람으로써 가장 적절한 답변을 작성해 주세요. 질문에 대한 답을 2단어 이내로 간단히 답하시오.
@@ -83,7 +83,8 @@ topic_keyword는 {}입니다.
 <background>내용을 바탕으로 <solve> </solve> 사이에 답변에 해당하는 답을 2단어 이내로 작성하고 그 이유에 대해 작성해 주세요..
 이 후 <eval> </eval>에서 그 답이 맞는지 평가하고, 맞다면 왜 맞는지, 틀리다면 왜 틀렸는지에 대해 간단히 작성하세요.
 상기 내용을 참고하여 최종적으로 2단어 이내의 답변을 <result> </result> 사이에 작성해 주세요. 맞으면 <solve>에서 작성한 답변을, 아니면 <eval>의 피드백을 바탕으로 정답을 새로 작성해 주세요. 2단어 이내로 작성해야합니다.
-일반적인 지식이 아니라, 반드시 전통적인 한국의 문화를 기반으로 풀어야 합니다.""".format(inp['question'], inp['topic_keyword'])
+일반적인 지식이 아니라, 반드시 전통적인 한국의 문화를 기반으로 풀어야 합니다.
+답변은 반드시 한국어로 작성해야 합니다.""".format(inp['question'], inp['topic_keyword'])
 
     message = [
         {
@@ -102,6 +103,8 @@ topic_keyword는 {}입니다.
 
 
 def make_validation(inp, output):
+    topic_keyword = inp['topic_keyword']
+
     if inp['question_type'] == '선다형':
         # question
         question = inp['question'].split('\\n')[0].strip()
@@ -113,7 +116,7 @@ def make_validation(inp, output):
         choices = '   '.join(choices_list)
 
         chat = """한국 문화 박사로써 질문에 대한 선다형 문제 답변의 번호를 작성한 것이다.
-주어진 선택지 중 가장 질문에 가까운 답을 찾은 것이다.
+주어진 선택지 중 가장 질문에 가까운 답을 찾은 것이다. 주제 분류는 {}이다.
 
 질문: {}
 {}
@@ -121,29 +124,31 @@ def make_validation(inp, output):
 
 먼저 <thinking> </thinking> tag 사이에 해당 질문에 대한 답변이 정확하다면 넘어가고, 정확하지 않다면 출처를 가져와 왜 정확하지 않고 실제 답변은 무엇인지 번호로 작성해 주세요.
 상기 내용을 바탕으로 최종 답변인 숫자는 <result> </result> 사이에 작성해 주세요. 맞으면 원래 답변에서 작성한 숫자를, 아니면 <thinking>의 결과를 바탕으로 정답을 새로 작성해 주세요. 숫자만 작성해야 합니다.
-일반적인 지식이 아니라, 반드시 전통적인 한국의 문화를 기반으로 풀어야 합니다.""".format(question, choices, output)
+일반적인 지식이 아니라, 반드시 전통적인 한국의 문화를 기반으로 풀어야 합니다.""".format(topic_keyword, question, choices, output)
 
     elif inp['question_type'] == '서술형':
         chat = """한국 문화 박사로써 질문에 대한 선다형 문제 답변의 번호를 작성한 것이다.
-주어진 선택지 중 가장 질문에 가까운 답을 찾은 것이다.
+주어진 선택지 중 가장 질문에 가까운 답을 찾은 것이다. 주제 분류는 {}이다.
 
 질문: {}
 답변: {}
 
 먼저 <thinking> </thinking> tag 사이에 해당 질문에 대한 답변이 정확하다면 넘어가고, 정확하지 않다면 출처를 가져와 왜 정확하지 않고 실제 답변은 무엇인지 새로운 답변으로 작성해 주세요.
 상기 내용을 참고하여 최종적으로 완성된 문장의 답변을 <result> </result> 사이에 작성해 주세요. 맞으면 원래의 답변을을, 아니면 <thinking>의 결과를 바탕으로 정답을 새로 작성해 주세요. 답변은 반드시 한국어로 작성해야 합니다. 350~400자 사이의 줄글로 작성해야 합니다.
-일반적인 지식이 아니라, 반드시 전통적인 한국의 문화를 기반으로 풀어야 합니다.""".format(inp['question'], output)
+일반적인 지식이 아니라, 반드시 전통적인 한국의 문화를 기반으로 풀어야 합니다.
+답변은 반드시 한국어로 작성해야 합니다.""".format(topic_keyword, inp['question'], output)
 
     elif inp['question_type'] == '단답형':
         chat = """한국 문화 박사로써 질문에 대한 선다형 문제 답변의 번호를 작성한 것이다.
-주어진 선택지 중 가장 질문에 가까운 답을 찾은 것이다.
+주어진 선택지 중 가장 질문에 가까운 답을 찾은 것이다. 주제 분류는 {}이다.
 
 질문: {}
 답변: {}
 
 먼저 <thinking> </thinking> tag 사이에 해당 질문에 대한 답변이 정확하다면 넘어가고, 정확하지 않다면 출처를 가져와 왜 정확하지 않고 실제 답변은 무엇인지 2단어 이내의 답변으로 작성해 주세요.
 상기 내용을 참고하여 최종적으로 2단어 이내의 답변을 <result> </result> 사이에 작성해 주세요. 맞으면 원래의 답변을, 아니면 <thinking>의 결과를 바탕으로 정답을 새로 작성해 주세요. 2단어 이내로 작성해야합니다.
-일반적인 지식이 아니라, 반드시 전통적인 한국의 문화를 기반으로 풀어야 합니다.""".format(inp['question'], output)
+일반적인 지식이 아니라, 반드시 전통적인 한국의 문화를 기반으로 풀어야 합니다.
+답변은 반드시 한국어로 작성해야 합니다.""".format(topic_keyword, inp['question'], output)
 
 
     message = [
@@ -160,58 +165,3 @@ def make_validation(inp, output):
     ]
 
     return message
-
-
-class CustomDataset(Dataset):
-    def __init__(self, fname, tokenizer):
-        IGNORE_INDEX=-100
-        self.inp = []
-        self.label = []
-
-        PROMPT = """당신은 한국의 전통 문화와 역사, 문법, 사회, 과학기술 등 다양한 분야에 대해 잘 알고 있는 유능한 한국 문화 박사입니다.
-
-기존 학술 자료 또는 백과사전 기준으로 정리해 주세요.
-확인된 사실 위주로 작성해 주세요. 가설이나 개인 의견은 포함하지 마세요.
-출처 기반 정보만 활용해야 하며, 추론은 생략해 주세요.
-무의미하게 동일한 단어나 문장을 반복하여 작성하지 말아주세요."""
-
-        with open(fname, encoding='utf-8') as f:
-            data = json.load(f)
-
-        for example in data:
-            user_prompt = make_chat(example["input"])
-            message = [
-                {"role": "system", "content": PROMPT},
-                {"role": "user", "content": user_prompt},
-            ]
-     
-            source = tokenizer.apply_chat_template(
-                message,
-                add_generation_prompt=True,
-                return_tensors="pt",
-                enable_thinking=False
-            )
-
-            target = example.get("output", "")
-            if target != "":
-                target += tokenizer.eos_token
-            target = tokenizer(
-                target,
-                return_attention_mask=False,
-                add_special_tokens=False,
-                return_tensors="pt"
-            )
-
-            target["input_ids"] = target["input_ids"].type(torch.int64)
-
-            input_ids = torch.concat((source[0], target["input_ids"][0]))
-            labels = torch.concat((torch.LongTensor([IGNORE_INDEX] * source[0].shape[0]), target["input_ids"][0]))
-            self.inp.append(input_ids)
-            self.label.append(labels)
-
-    def __len__(self):
-        return len(self.inp)
-
-    def __getitem__(self, idx):
-        return self.inp[idx]
-
