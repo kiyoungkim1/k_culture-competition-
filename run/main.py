@@ -98,6 +98,15 @@ def main(args):
         get_answer = False
         question_type = example['input']['question_type']
 
+        import difflib
+        def find_most_similar_index(choices_list, topic_keyword):
+            # 띄어쓰기 제거
+            topic = topic_keyword.replace(' ', '')
+            choices_no_space = [choice.replace(' ', '') for choice in choices_list]
+            # difflib로 유사도 계산 후 가장 높은 index 반환
+            similarities = [difflib.SequenceMatcher(None, topic, choice).ratio() for choice in choices_no_space]
+            return similarities.index(max(similarities))
+
         # keyword가 정답인 경우
         if question_type == '선다형':
             choice_text = example['input']['question'].replace("\\t", ")").split('\\n')[-1]
@@ -106,7 +115,7 @@ def main(args):
             choices = '   '.join(choices_list)
 
             if example['input']['topic_keyword'] in choices:
-                answer_idx = choices_list.index(example['input']['topic_keyword'].strip())+1
+                answer_idx = find_most_similar_index(choices_list, example['input']['topic_keyword'])+1
 
                 output_text = answer_idx
                 output_processed = answer_idx
