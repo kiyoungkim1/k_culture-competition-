@@ -26,7 +26,7 @@ nohup python -m run.main --input resource/data_given/korean_culture_qa_V1.0_dev.
 nohup python -m run.main  --input resource/data_given/korean_culture_qa_V1.0_dev.json  --output result_exaone_32B.json  --model_id LGAI-EXAONE/EXAONE-3.5-32B-Instruct --device cuda:2 > out2 &
 
 # DeepSeek-llama3.3-Bllossom-70B  --> 2bit로 양자화 (chatGPT에서 hf 모델 불러와서 양자화 후 업로드 하는 방법 나옴)
-python -m run.main  --input resource/data_given/korean_culture_qa_V1.0_dev.json  --output result_bllossom70B.json  --model_id UNIVA-Bllossom/DeepSeek-llama3.3-Bllossom-70B --device cuda:1
+nohup python -m run.main  --input resource/data_given/korean_culture_qa_V1.0_dev.json  --output result_bllossom70B.json  --model_id UNIVA-Bllossom/DeepSeek-llama3.3-Bllossom-70B --device cuda:0 > out0 &
 
 # gemma 27B(인증 필요 필요)
 python -m run.main  --input resource/data_given/korean_culture_qa_V1.0_test.json  --output result_gemma27B.json  --model_id google/gemma-3-27b-it --device cuda:0
