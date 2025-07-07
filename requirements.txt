@@ -6,7 +6,7 @@ torchvision==0.17.2+cu121
 # 기타 패키지
 numpy
 tqdm
-transformers
+transformers==4.51.3  # https://github.com/huggingface/transformers/issues/38494#issuecomment-2937853519
 datasets
 accelerate
 bitsandbytes

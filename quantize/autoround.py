@@ -1,7 +1,7 @@
 from transformers import AutoModelForCausalLM, AutoTokenizer
 from auto_round import AutoRound
 
-model_name = "skt/A.X-4.0"
+model_name = "naver-hyperclovax/HyperCLOVAX-SEED-Text-Instruct-0.5B" # "skt/A.X-4.0"
 model = AutoModelForCausalLM.from_pretrained(model_name, torch_dtype="auto")
 tokenizer = AutoTokenizer.from_pretrained(model_name)
 
