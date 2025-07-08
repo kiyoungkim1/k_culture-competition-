@@ -2,6 +2,7 @@ import argparse
 import json
 import tqdm
 import re
+import random
 
 import torch
 import numpy
@@ -35,6 +36,33 @@ def check_vram(device):
 
     print(f"Allocated VRAM: {allocated:.2f} MB")
     print(f"Reserved VRAM: {reserved:.2f} MB")
+
+def get_llm_result(model, tokenizer, args, message_chat, max_new_tokens=1024, temperature=0.5, top_p=0.8, repetition_penalty=0.8):
+    source = tokenizer.apply_chat_template(
+        message_chat,
+        add_generation_prompt=True,
+        return_tensors="pt",
+        enable_thinking=False
+    )
+    input_ids = source[0]
+
+    outputs = model.generate(
+        input_ids.to(args.device).unsqueeze(0),
+        max_new_tokens=max_new_tokens,
+        eos_token_id=tokenizer.eos_token_id,  # terminators,
+        # stopping_criteria=stop_criteria,
+        pad_token_id=tokenizer.eos_token_id,
+        repetition_penalty=repetition_penalty,
+        temperature=temperature,
+        top_p=top_p,
+        do_sample=True,
+    )
+    output_text = tokenizer.decode(outputs[0][input_ids.shape[-1]:], skip_special_tokens=True)
+
+    # postprocessing
+    output_processed = apply_post_processing(output_text)
+
+    return output_processed, output_text
 
 def main(args):
     # Prepare model loading kwargs
@@ -90,12 +118,13 @@ def main(args):
     #     StopOnDoubleNewline(tokenizer)
     # ])
 
+
     file_test = args.input
     with open(file_test, "r", encoding='utf8') as f:
         result = json.load(f)
 
     for idx, example in tqdm.tqdm(enumerate(result)):
-        # TODO: 선다형에서 최종답이 숫자가 아니면 파라미터를 바꿔 다시 생성, 단답형에서 4단어 이내가 아니면 파리미터 바꿔서 다시 생성
+        # TODO: 다른 파라미터에서 3번 생성하고 마지막에 3개 비교해서 답 내기.
         get_answer = False
         question_type = example['input']['question_type']
 
@@ -123,7 +152,28 @@ def main(args):
                 output_validation = answer_idx
                 output_final = answer_idx
 
-                get_answer = True
+            else:
+                # 1.1 답변 생성
+                message_chat = make_chat(example["input"])
+                for i in range(3):
+                    output_processed, output_text = get_llm_result(model, tokenizer, args, message_chat,
+                                                                   max_new_tokens=1024, temperature=round(random.uniform(0.3, 0.5), 2), top_p=round(random.uniform(0.6, 0.8), 2))
+                    try:
+                        int(output_processed)
+                        break
+                    except:
+                        pass
+
+                # 2.1 validation
+                for i in range(3):
+                    message_val = make_validation(example["input"], output_processed)
+                    output_final, output_validation = get_llm_result(model, tokenizer, args, message_val,
+                                                                     max_new_tokens=512, temperature=round(random.uniform(0.3, 0.5), 2), top_p=round(random.uniform(0.6, 0.8), 2))
+                    try:
+                        int(output_processed)
+                        break
+                    except:
+                        pass
 
         elif question_type == '단답형':
             message = [
@@ -141,96 +191,46 @@ def main(args):
 답변: {}
 
 해당 질문에 대한 답변이 맞나요? 답이 맞다면 <result> </result> tag안에 해당 답변을 그대로 작성해 주세요.
-질문에 대한 답변이 구체적이지 않다면 <result> </result> tag 안에 '적절하지 않음'이라고 작성해 주세요.""".format(example['input']['question'], example['input']['topic_keyword'])},
+질문에 대한 답변이 구체적이지 않다면 <result> </result> tag 안에 '적절하지 않음'이라고 작성해 주세요.
+이 이외의 답은 작성하지 마세요.""".format(example['input']['question'], example['input']['topic_keyword'])},
             ]
 
-            source = tokenizer.apply_chat_template(
-                message,
-                add_generation_prompt=True,
-                return_tensors="pt",
-                enable_thinking=False
-            )
-            input_ids = source[0]
-
-            outputs = model.generate(
-                input_ids.to(args.device).unsqueeze(0),
-                max_new_tokens=512,
-                eos_token_id=tokenizer.eos_token_id, #terminators,
-                # stopping_criteria=stop_criteria,
-                pad_token_id=tokenizer.eos_token_id,
-                repetition_penalty=0.8,
-                temperature=0.3,
-                top_p=0.8,
-                do_sample=True,
-            )
-            output_text = tokenizer.decode(outputs[0][input_ids.shape[-1]:], skip_special_tokens=True)
-
-            # 1.2 postprocessing
-            output_processed = apply_post_processing(output_text)
+            output_processed, output_text = get_llm_result(model, tokenizer, args, message, max_new_tokens=256,
+                                                           temperature=round(random.uniform(0.3, 0.5), 2), top_p=round(random.uniform(0.6, 0.8), 2), repetition_penalty=1.5)
 
             if example['input']['topic_keyword'] in output_processed:
                 output_text = example['input']['topic_keyword']
                 output_processed = example['input']['topic_keyword']
                 output_validation = example['input']['topic_keyword']
                 output_final = example['input']['topic_keyword']
-                get_answer = True
 
-        # keyword가 답이 아닌 경우
-        if get_answer == False:
-            # 1.1 답변 생성
+            else:
+                # 1.1 답변 생성
+                for i in range(3):
+                    message_chat = make_chat(example["input"])
+                    output_processed, output_text = get_llm_result(model, tokenizer, args, message_chat,
+                                                                   max_new_tokens=1024, temperature=round(random.uniform(0.3, 0.5), 2), top_p=round(random.uniform(0.6, 0.8), 2))
+                    if len(output_processed) < 15:
+                        break
+
+                # 2.1 validation
+                for i in range(3):
+                    message_val = make_validation(example["input"], output_processed)
+                    output_final, output_validation = get_llm_result(model, tokenizer, args, message_val,
+                                                                 max_new_tokens=512, temperature=round(random.uniform(0.3, 0.5), 2), top_p=round(random.uniform(0.6, 0.8), 2))
+
+                    if len(output_final) < 15:
+                        break
+
+        elif question_type=="서술형":
             message_chat = make_chat(example["input"])
-
-            source = tokenizer.apply_chat_template(
-                message_chat,
-                add_generation_prompt=True,
-                return_tensors="pt",
-                enable_thinking=False
-            )
-            input_ids = source[0]
-
-            outputs = model.generate(
-                input_ids.to(args.device).unsqueeze(0),
-                max_new_tokens=1536,
-                eos_token_id=tokenizer.eos_token_id, #terminators,
-                # stopping_criteria=stop_criteria,
-                pad_token_id=tokenizer.eos_token_id,
-                repetition_penalty=0.8,
-                temperature=0.3,
-                top_p=0.8,
-                do_sample=True,
-            )
-            output_text = tokenizer.decode(outputs[0][input_ids.shape[-1]:], skip_special_tokens=True)
-
-            # 1.2 postprocessing
-            output_processed = apply_post_processing(output_text)
+            output_processed, output_text = get_llm_result(model, tokenizer, args, message_chat,
+                                                           max_new_tokens=1536, temperature=round(random.uniform(0.3, 0.5), 2), top_p=round(random.uniform(0.6, 0.8), 2))
 
             # 2.1 validation
             message_val = make_validation(example["input"], output_processed)
-
-            source = tokenizer.apply_chat_template(
-                message_val,
-                add_generation_prompt=True,
-                return_tensors="pt",
-                enable_thinking=False
-            )
-            input_ids = source[0]
-
-            outputs = model.generate(
-                input_ids.to(args.device).unsqueeze(0),
-                max_new_tokens=1024,
-                eos_token_id=tokenizer.eos_token_id, #terminators,
-                # stopping_criteria=stop_criteria,
-                pad_token_id=tokenizer.eos_token_id,
-                repetition_penalty=0.8,
-                temperature=0.3,
-                top_p=0.8,
-                do_sample=True,
-            )
-            output_validation = tokenizer.decode(outputs[0][input_ids.shape[-1]:], skip_special_tokens=True)
-
-            # 2.2 post_processing
-            output_final = apply_post_processing(output_validation)
-
+            output_final, output_validation = get_llm_result(model, tokenizer, args, message_val,
+                                                             max_new_tokens=1024, temperature=round(random.uniform(0.3, 0.5), 2), top_p=round(random.uniform(0.6, 0.8), 2))
 
         result[idx]["output"] = {
             "raw": output_text,
@@ -240,9 +240,7 @@ def main(args):
         }
 
         # log
-        print("output_text", output_text)
         print("output_processed", output_processed)
-        print("output_validation", output_validation)
         print("output_final", output_final)
         check_vram(args.device)
 

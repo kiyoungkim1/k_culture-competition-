@@ -9,7 +9,7 @@ def apply_post_processing(answer_text):
         if result_match:
             extracted_result = result_match.group(1).strip()
         else:
-            print("ERROR", item['id'])
+            print("ERROR")
             extracted_result = "# ERROR"
 
     elif "<result>" in answer_text and "</result>" not in answer_text: # <result>는 있는데 </result>는 없는 경우가 있음
