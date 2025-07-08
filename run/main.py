@@ -190,9 +190,9 @@ def main(args):
 질문: {}
 답변: {}
 
-해당 질문에 대한 답변이 맞나요? 답이 맞다면 <result> </result> tag안에 해당 답변을 그대로 작성해 주세요.
-질문에 대한 답변이 구체적이지 않다면 <result> </result> tag 안에 '적절하지 않음'이라고 작성해 주세요.
-이 이외의 답은 작성하지 마세요.""".format(example['input']['question'], example['input']['topic_keyword'])},
+해당 질문에 대한 답변이 맞나요? 답변이 맞다면 <result> </result> tag안에 해당 답변을 그대로 작성해 주세요.
+질문에 대한 답변이 너무 일반적이거나(답이 '한강'인데 '강'이라고 한다거나) 구체적이지 않다면 <result> </result> tag 안에 '적절하지 않음'이라고 작성해 주세요.
+이 이외의 다른 텍스트는 작성하지 마세요.""".format(example['input']['question'], example['input']['topic_keyword'])},
             ]
 
             output_processed, output_text = get_llm_result(model, tokenizer, args, message, max_new_tokens=256,
