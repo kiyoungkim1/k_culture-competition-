@@ -1,10 +1,11 @@
 from transformers import AutoModelForCausalLM, AutoTokenizer
 from auto_round import AutoRound
+# import torch
 
 model_name = "skt/A.X-4.0"
 print(model_name)
 model = AutoModelForCausalLM.from_pretrained(model_name, torch_dtype="auto")
-model = torch.compile(model) # torch compile
+# model = torch.compile(model) # torch compile
 tokenizer = AutoTokenizer.from_pretrained(model_name)
 
 bits, group_size, sym = 2, 128, True
