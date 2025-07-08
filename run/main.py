@@ -95,6 +95,7 @@ def main(args):
         result = json.load(f)
 
     for idx, example in tqdm.tqdm(enumerate(result)):
+        # TODO: 선다형에서 최종답이 숫자가 아니면 파라미터를 바꿔 다시 생성, 단답형에서 4단어 이내가 아니면 파리미터 바꿔서 다시 생성
         get_answer = False
         question_type = example['input']['question_type']
 
