@@ -56,6 +56,8 @@ def get_result_excel(json_path):
 if __name__ == '__main__':
     get_result_excel('resource/data_given/korean_culture_qa_V1.0_dev.json')
     get_result_excel('result_exaone_32B.json')
-    get_result_excel('result_ax70B.json')
+    get_result_excel('result_ax70B_quantized.json')
+    get_result_excel('result_midm11B.json')
+
 
 # python src/post_processing.py

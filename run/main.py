@@ -67,11 +67,7 @@ def get_llm_result(model, tokenizer, args, message_chat, max_new_tokens=1024, te
 
 def main(args):
     # Prepare model loading kwargs
-    model_kwargs = {
-        "device_map": args.device,  # ex: "cuda" or "auto"
-        "load_in_4bit": True,
-        "bnb_4bit_compute_dtype": torch.float16,  # optional: bfloat16도 가능
-    }
+    model_kwargs = {}
 
     if args.use_auth_token:
         model_kwargs["use_auth_token"] = args.use_auth_token
@@ -79,13 +75,32 @@ def main(args):
     if 'autoround' in args.model_id:
         model = AutoModelForCausalLM.from_pretrained(args.model_id,
                                                      device_map=args.device, torch_dtype="auto")
+    elif 'GPTQ' in args.model_id:
+        model = AutoModelForCausalLM.from_pretrained(
+            args.model_id,
+            trust_remote_code=True,
+            device_map=args.device
+        )
+
+    elif 'Midm' in args.model_id:
+        model_kwargs["device_map"] = args.device
+        model_kwargs["load_in_8bit"] = True
+
+        model = AutoModelForCausalLM.from_pretrained(
+            args.model_id,
+            trust_remote_code=True,
+            device_map=args.device
+        )
+
     else:
-    # model = None
+        model_kwargs["device_map"] = args.device
+        model_kwargs["load_in_4bit"] = True
+        model_kwargs["bnb_4bit_compute_dtype"] = torch.float16
+
         model = AutoModelForCausalLM.from_pretrained(
             args.model_id,
             trust_remote_code=True,
             **model_kwargs,
-
         )
     model.eval()
 
