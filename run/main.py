@@ -76,7 +76,7 @@ def main(args):
     if args.use_auth_token:
         model_kwargs["use_auth_token"] = args.use_auth_token
 
-    if 'quantized' in args.model_id:
+    if 'autoround' in args.model_id:
         model = AutoModelForCausalLM.from_pretrained(args.model_id,
                                                      device_map="auto", torch_dtype="auto", **model_kwargs,)
     else:
