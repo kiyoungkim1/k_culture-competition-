@@ -78,7 +78,7 @@ def main(args):
 
     if 'autoround' in args.model_id:
         model = AutoModelForCausalLM.from_pretrained(args.model_id,
-                                                     device_map="auto", torch_dtype="auto")
+                                                     device_map=args.device, torch_dtype="auto")
     else:
     # model = None
         model = AutoModelForCausalLM.from_pretrained(
