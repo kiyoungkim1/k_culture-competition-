@@ -33,6 +33,9 @@ nohup python -m run.main  --input resource/data_given/korean_culture_qa_V1.0_tes
 # skt/A.X-4.0
 nohup python -m run.main  --input resource/data_given/korean_culture_qa_V1.0_dev.json  --output result_ax70B.json  --model_id skt/A.X-4.0 --device cuda:3 > out3 &
 
+nohup python -m run.main  --input resource/data_given/korean_culture_qa_V1.0_dev.json  --output result_ax70B_quantized.json  --model_id tmp_autoround --device cuda:3 > out3 &
+
+
 # K-intelligence/Midm-2.0-Base-Instruct(11.5B)
 nohup python -m run.main  --input resource/data_given/korean_culture_qa_V1.0_dev.json  --output result_midm11B.json  --model_id  K-intelligence/Midm-2.0-Base-Instruct  --device cuda:2 > out2 &
 

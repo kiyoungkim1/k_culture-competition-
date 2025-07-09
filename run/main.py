@@ -56,6 +56,7 @@ def get_llm_result(model, tokenizer, args, message_chat, max_new_tokens=1024, te
         temperature=temperature,
         top_p=top_p,
         do_sample=True,
+        no_repeat_ngram_size=5,
     )
     output_text = tokenizer.decode(outputs[0][input_ids.shape[-1]:], skip_special_tokens=True)
 
@@ -75,13 +76,17 @@ def main(args):
     if args.use_auth_token:
         model_kwargs["use_auth_token"] = args.use_auth_token
 
+    if 'quantized' in args.model_id:
+        model = AutoModelForCausalLM.from_pretrained(args.model_id,
+                                                     device_map="auto", torch_dtype="auto", **model_kwargs,)
+    else:
     # model = None
-    model = AutoModelForCausalLM.from_pretrained(
-        args.model_id,
-        trust_remote_code=True,
-        **model_kwargs,
+        model = AutoModelForCausalLM.from_pretrained(
+            args.model_id,
+            trust_remote_code=True,
+            **model_kwargs,
 
-    )
+        )
     model.eval()
 
     if args.tokenizer == None:
@@ -168,7 +173,7 @@ def main(args):
                 for i in range(3):
                     message_val = make_validation(example["input"], output_processed)
                     output_final, output_validation = get_llm_result(model, tokenizer, args, message_val,
-                                                                     max_new_tokens=512, temperature=round(random.uniform(0.3, 0.5), 2), top_p=round(random.uniform(0.6, 0.8), 2))
+                                                                     max_new_tokens=512, temperature=round(random.uniform(0.5, 0.7), 2), top_p=round(random.uniform(0.7, 0.8), 2))
                     try:
                         int(output_processed)
                         break
@@ -196,7 +201,7 @@ def main(args):
             ]
 
             output_processed, output_text = get_llm_result(model, tokenizer, args, message, max_new_tokens=256,
-                                                           temperature=round(random.uniform(0.3, 0.5), 2), top_p=round(random.uniform(0.6, 0.8), 2), repetition_penalty=1.5)
+                                                           temperature=round(random.uniform(0.5, 0.7), 2), top_p=round(random.uniform(0.7, 0.8), 2), repetition_penalty=1.5)
 
             if example['input']['topic_keyword'] in output_processed:
                 output_text = example['input']['topic_keyword']
@@ -209,7 +214,7 @@ def main(args):
                 for i in range(3):
                     message_chat = make_chat(example["input"])
                     output_processed, output_text = get_llm_result(model, tokenizer, args, message_chat,
-                                                                   max_new_tokens=1024, temperature=round(random.uniform(0.3, 0.5), 2), top_p=round(random.uniform(0.6, 0.8), 2))
+                                                                   max_new_tokens=1024, temperature=round(random.uniform(0.5, 0.7), 2), top_p=round(random.uniform(0.7, 0.8), 2))
                     if len(output_processed) < 15:
                         break
 
@@ -217,7 +222,7 @@ def main(args):
                 for i in range(3):
                     message_val = make_validation(example["input"], output_processed)
                     output_final, output_validation = get_llm_result(model, tokenizer, args, message_val,
-                                                                 max_new_tokens=512, temperature=round(random.uniform(0.3, 0.5), 2), top_p=round(random.uniform(0.6, 0.8), 2))
+                                                                 max_new_tokens=512, temperature=round(random.uniform(0.5, 0.7), 2), top_p=round(random.uniform(0.7, 0.8), 2))
 
                     if len(output_final) < 15:
                         break
@@ -225,12 +230,12 @@ def main(args):
         elif question_type=="서술형":
             message_chat = make_chat(example["input"])
             output_processed, output_text = get_llm_result(model, tokenizer, args, message_chat,
-                                                           max_new_tokens=1536, temperature=round(random.uniform(0.3, 0.5), 2), top_p=round(random.uniform(0.6, 0.8), 2))
+                                                           max_new_tokens=1536, temperature=round(random.uniform(0.5, 0.7), 2), top_p=round(random.uniform(0.7, 0.8), 2))
 
             # 2.1 validation
             message_val = make_validation(example["input"], output_processed)
             output_final, output_validation = get_llm_result(model, tokenizer, args, message_val,
-                                                             max_new_tokens=1024, temperature=round(random.uniform(0.3, 0.5), 2), top_p=round(random.uniform(0.6, 0.8), 2))
+                                                             max_new_tokens=1024, temperature=round(random.uniform(0.5, 0.7), 2), top_p=round(random.uniform(0.7, 0.8), 2))
 
         result[idx]["output"] = {
             "raw": output_text,
