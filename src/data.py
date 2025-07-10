@@ -1,19 +1,6 @@
-import json
 import re
 
-import torch
-from torch.utils.data import Dataset
-
-from src.data_example import get_domain_specific_info
-
-domain_specific_info = get_domain_specific_info()
-
 def make_chat(inp):
-    # domain
-    # domain = inp['domain']
-    # domain_info = domain_specific_info[domain]
-    # ## TODO: domain info가 문제의 키워드 들이랑은 다른 지식인데 들어가는게 꼭 좋은지 모르겠음. 패턴을 가르쳐 주는게 아니기 때문에 많이 알려주는게 의미가 없을 듯.
-
     topic_keyword = inp['topic_keyword']
     question_type = inp['question_type']
 
@@ -87,12 +74,11 @@ def make_chat(inp):
 주제는 {}입니다.
 질문: {}
 
-먼저 <background> </background> 사이에 질문에 관한 내용을 3가지를 각각 150자씩 총 500자 정도로 작성해 주세요.
-<background>내용을 바탕으로 <solve> </solve> 사이에 답변에 해당하는 답을 완성된 문장으로 작성하세요.
-이 후 <eval> </eval>에서 그 답이 맞는지 평가하고, 맞다면 왜 맞는지, 틀리다면 왜 틀렸는지에 대해 간단히 작성하세요.
-상기 내용을 참고하여 최종적으로 완성된 문장의 답변을 <result> </result> 사이에 작성해 주세요. 맞으면 <solve>에서 작성한 글을, 아니면 <eval>의 피드백을 바탕으로 정답을 새로 작성해 주세요.
-일반적인 지식이 아니라, 반드시 전통적인 한국의 문화를 기반으로 풀어야 합니다.
-답변은 반드시 한국어로 작성해야 합니다. 350~400자 사이의 줄글로 작성해야 합니다..""".format(topic_keyword, inp['question'])
+먼저 <background> </background> 사이에 질문에 관한 내용을 3가지를 각각 200자씩 총 600자 정도로 작성해 주세요.
+<background>내용을 바탕으로 <solve> </solve> 사이에 답변에 해당하는 답을 500자 정도의 완성된 문장으로 작성하세요.
+이 후 <eval> </eval>에서 작성한 답안의 내용을 더 명확하고 구체적화 하여 질문에 더 적합한 답이 될 수 있느 개선점을 100자 정도로 작성해 주세요.
+상기 내용을 참고하여 최종적으로 완성된 문장의 답변을 <result> </result> 사이에 500자 정도로 작성해 주세요. 기본적으로 <solve>에서 작성한 글을 기반으로 하되 <eval>의 피드백을 반영해 주세요.
+답변은 반드시 한국어로 작성해야 합니다.""".format(topic_keyword, inp['question'])
 
     message = [
         {
@@ -100,8 +86,7 @@ def make_chat(inp):
             "content": """당신은 한국의 전통 문화와 역사, 문법, 사회, 과학기술 등 다양한 분야에 대해 잘 알고 있는 유능한 한국 문화 박사입니다.
 
 기존 학술 자료 또는 백과사전 기준으로 질문에 답해주세요.
-확인된 사실 위주로 작성해 주세요. 가설이나 개인 의견은 포함하지 마세요.
-출처 기반 정보만 활용해야 하며, 추론은 생략해 주세요.
+확인된 사실 위주로 작성해 주세요. 출처 기반 정보만 활용해야 하며, 추론은 생략해 주세요.
 무의미하게 동일한 단어나 문장을 반복하여 작성하지 말아주세요."""
         },
         {"role": "user", "content": chat},

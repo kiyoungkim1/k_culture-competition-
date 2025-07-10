@@ -3,6 +3,10 @@ import re
 import pandas as pd
 
 def apply_post_processing(answer_text):
+    # </result>가 여러개 나오는 경우 처음 나온 곳 까지만 쓰기
+    if answer_text.count('</result>') >= 2:
+        answer_text = answer_text[:answer_text.find('</result>')]
+
     if "<result>" in answer_text and "</result>" in answer_text:
         result_match = re.search(r"<result>\s*(.*?)\s*</result>", answer_text, re.DOTALL)
 

@@ -75,14 +75,14 @@ def main(args):
     if 'autoround' in args.model_id:
         model = AutoModelForCausalLM.from_pretrained(args.model_id,
                                                      device_map=args.device, torch_dtype="auto")
-    elif 'GPTQ' in args.model_id:
+    elif 'GPTQ' in args.model_id:   # 양자화 없음
         model = AutoModelForCausalLM.from_pretrained(
             args.model_id,
             trust_remote_code=True,
             device_map=args.device
         )
 
-    elif 'Midm' in args.model_id:
+    elif 'Midm' in args.model_id:  # 8bit 양자화
         model_kwargs["device_map"] = args.device
         model_kwargs["load_in_8bit"] = True
 
@@ -92,7 +92,7 @@ def main(args):
             device_map=args.device
         )
 
-    else:
+    else:  # 4 bit 양자화
         model_kwargs["device_map"] = args.device
         model_kwargs["load_in_4bit"] = True
         model_kwargs["bnb_4bit_compute_dtype"] = torch.float16
@@ -138,7 +138,6 @@ def main(args):
     #     StopOnDoubleNewline(tokenizer)
     # ])
 
-
     file_test = args.input
     with open(file_test, "r", encoding='utf8') as f:
         result = json.load(f)
@@ -169,26 +168,12 @@ def main(args):
 
                 output_text = answer_idx
                 output_processed = answer_idx
-                output_validation = answer_idx
-                output_final = answer_idx
 
             else:
-                # 1.1 답변 생성
                 message_chat = make_chat(example["input"])
-                for i in range(3):
+                for i in range(5):
                     output_processed, output_text = get_llm_result(model, tokenizer, args, message_chat,
                                                                    max_new_tokens=1024, temperature=round(random.uniform(0.3, 0.5), 2), top_p=round(random.uniform(0.6, 0.8), 2))
-                    try:
-                        int(output_processed)
-                        break
-                    except:
-                        pass
-
-                # 2.1 validation
-                for i in range(3):
-                    message_val = make_validation(example["input"], output_processed)
-                    output_final, output_validation = get_llm_result(model, tokenizer, args, message_val,
-                                                                     max_new_tokens=512, temperature=round(random.uniform(0.5, 0.7), 2), top_p=round(random.uniform(0.7, 0.8), 2))
                     try:
                         int(output_processed)
                         break
@@ -200,18 +185,15 @@ def main(args):
                 {
                     "role": "system",
                     "content": """당신은 한국의 전통 문화와 역사, 문법, 사회, 과학기술 등 다양한 분야에 대해 잘 알고 있는 유능한 한국 문화 박사입니다.
-
-기존 학술 자료 또는 백과사전 기준으로 질문에 답해주세요.
-확인된 사실 위주로 작성해 주세요. 가설이나 개인 의견은 포함하지 마세요.
-출처 기반 정보만 활용해야 하며, 추론은 생략해 주세요."""
+주어진 질문에 대한 답변이 정확한지 판단해 주세요."""
                 },
-                {"role": "user", "content": """[질문]을 잘 읽고 한국사람으로써 가장 적절한 답변을 작성한 것입니다.
+                {"role": "user", "content": """질문을 잘 읽고 한국사람으로써 가장 적절한 답변을 작성한 것입니다.
 
 질문: {}
 답변: {}
 
-해당 질문에 대한 답변이 맞나요? 답변이 맞다면 <result> </result> tag안에 해당 답변을 그대로 작성해 주세요.
-질문에 대한 답변이 너무 일반적이거나(답이 '한강'인데 '강'이라고 한다거나) 구체적이지 않다면 <result> </result> tag 안에 '적절하지 않음'이라고 작성해 주세요.
+해당 질문에 대한 답변이 구체적이고 정확하다면 <result> </result> tag안에 해당 답변을 그대로 작성해 주세요.
+질문에 대한 답변이 너무 포괄적이라면(답이 '한강'인데 '강'이라고 한다거나) <result> </result> tag 안에 '포괄적임'이라고 작성해 주세요.
 이 이외의 다른 텍스트는 작성하지 마세요.""".format(example['input']['question'], example['input']['topic_keyword'])},
             ]
 
@@ -221,25 +203,14 @@ def main(args):
             if example['input']['topic_keyword'] in output_processed:
                 output_text = example['input']['topic_keyword']
                 output_processed = example['input']['topic_keyword']
-                output_validation = example['input']['topic_keyword']
-                output_final = example['input']['topic_keyword']
 
             else:
                 # 1.1 답변 생성
-                for i in range(3):
+                for i in range(5):
                     message_chat = make_chat(example["input"])
                     output_processed, output_text = get_llm_result(model, tokenizer, args, message_chat,
                                                                    max_new_tokens=1024, temperature=round(random.uniform(0.5, 0.7), 2), top_p=round(random.uniform(0.7, 0.8), 2))
                     if len(output_processed) < 15:
-                        break
-
-                # 2.1 validation
-                for i in range(3):
-                    message_val = make_validation(example["input"], output_processed)
-                    output_final, output_validation = get_llm_result(model, tokenizer, args, message_val,
-                                                                 max_new_tokens=512, temperature=round(random.uniform(0.5, 0.7), 2), top_p=round(random.uniform(0.7, 0.8), 2))
-
-                    if len(output_final) < 15:
                         break
 
         elif question_type=="서술형":
@@ -247,21 +218,13 @@ def main(args):
             output_processed, output_text = get_llm_result(model, tokenizer, args, message_chat,
                                                            max_new_tokens=1536, temperature=round(random.uniform(0.5, 0.7), 2), top_p=round(random.uniform(0.7, 0.8), 2))
 
-            # 2.1 validation
-            message_val = make_validation(example["input"], output_processed)
-            output_final, output_validation = get_llm_result(model, tokenizer, args, message_val,
-                                                             max_new_tokens=1024, temperature=round(random.uniform(0.5, 0.7), 2), top_p=round(random.uniform(0.7, 0.8), 2))
-
         result[idx]["output"] = {
             "raw": output_text,
-            "answer_before_validation": output_processed,
-            "validation": output_validation,
-            "answer": output_final,
+            "answer": output_processed
         }
 
         # log
         print("output_processed", output_processed)
-        print("output_final", output_final)
         check_vram(args.device)
 
     with open(args.output, "w", encoding="utf-8") as f:
