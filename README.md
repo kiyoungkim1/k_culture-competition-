@@ -25,25 +25,17 @@ nohup python -m run.main --input resource/data_given/korean_culture_qa_V1.0_dev.
 
 
 ### Exaone3.5 32B (--> 길이가 길어지면 24GB 넘기도 함)
-nohup python -m run.main  --input resource/data_given/korean_culture_qa_V1.0_dev.json  --output result_exaone_32B.json  --model_id LGAI-EXAONE/EXAONE-3.5-32B-Instruct --device cuda:0 > out0 &
+nohup python -m run.main  --input resource/data_given/korean_culture_qa_V1.0_test.json  --output result_exaone_32B.json  --model_id LGAI-EXAONE/EXAONE-3.5-32B-Instruct --device cuda:0 > out0 &
 
-# gemma 27B(인증 필요 필요)
-nohup python -m run.main  --input resource/data_given/korean_culture_qa_V1.0_test.json  --output result_gemma27B.json  --model_id google/gemma-3-27b-it  --device cuda:1 > out1 &
-
-
-nohup python -m run.main  --input resource/data_given/korean_culture_qa_V1.0_test.json  --output result_gemma27B_gptq.json  --model_id ISTA-DASLab/gemma-3-27b-it-GPTQ-4b-128g  --device cuda:1 > out1 &
-
+# gemma 27B(인증 필요 필요) --> 특정 transformers 필요(https://huggingface.co/ISTA-DASLab/gemma-3-27b-it-GPTQ-4b-128g)   pip install git+https://github.com/huggingface/transformers@v4.49.0-Gemma-3
+nohup python -m run.main  --input resource/data_given/korean_culture_qa_V1.0_dev.json  --output result_gemma27B.json  --model_id google/gemma-3-27b-it  --device cuda:1 > out1 &
 
 # skt/A.X-4.0
 nohup python -m run.main  --input resource/data_given/korean_culture_qa_V1.0_dev.json  --output result_ax70B.json  --model_id skt/A.X-4.0 --device cuda:3 > out3 &
-
-nohup python -m run.main  --input resource/data_given/korean_culture_qa_V1.0_dev.json  --output result_ax70B_quantized.json  --model_id tmp_autoround --device cuda:3 > out3 &
-
+nohup python -m run.main  --input resource/data_given/korean_culture_qa_V1.0_test.json  --output result_ax70B_quantized.json  --model_id tmp_autoround --device cuda:3 > out3 &
 
 # K-intelligence/Midm-2.0-Base-Instruct(11.5B)
-nohup python -m run.main  --input resource/data_given/korean_culture_qa_V1.0_dev.json  --output result_midm11B.json  --model_id  K-intelligence/Midm-2.0-Base-Instruct  --device cuda:2 > out2 &
-
-# solar pro2(upstage)
+nohup python -m run.main  --input resource/data_given/korean_culture_qa_V1.0_test.json  --output result_midm11B.json  --model_id  K-intelligence/Midm-2.0-Base-Instruct  --device cuda:2 > out2 &
 
 
 # 다운 받아져 있는 모델 리스트 보기(ubuntu)
