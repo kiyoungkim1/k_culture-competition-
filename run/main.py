@@ -66,6 +66,8 @@ def get_llm_result(model, tokenizer, args, message_chat, max_new_tokens=1024, te
     return output_processed, output_text
 
 def main(args):
+    print('model_id: {}'.format(args.model_id))
+
     # Prepare model loading kwargs
     model_kwargs = {}
 
@@ -75,32 +77,42 @@ def main(args):
     if 'autoround' in args.model_id:
         model = AutoModelForCausalLM.from_pretrained(args.model_id,
                                                      device_map=args.device, torch_dtype="auto")
-    elif 'GPTQ' in args.model_id:   # 양자화 없음
+
+    elif 'GPTQ' in args.model_id or 'fp8':   # 양자화 없음
         model = AutoModelForCausalLM.from_pretrained(
             args.model_id,
             trust_remote_code=True,
             device_map=args.device
         )
 
-    elif 'Midm' in args.model_id:  # 8bit 양자화
-        model_kwargs["device_map"] = args.device
+    elif 'Midm' in args.model_id:  # 16bit 양자화
+        model = AutoModelForCausalLM.from_pretrained(
+            args.model_id,
+            trust_remote_code=True,
+            device_map=args.device,
+
+            torch_dtype=torch.float16
+        )
+
+    elif 'aaaaa' in args.model_id:  # 8bit 양자화
         model_kwargs["load_in_8bit"] = True
 
         model = AutoModelForCausalLM.from_pretrained(
             args.model_id,
             trust_remote_code=True,
-            device_map=args.device
+            device_map=args.device,
+
+            load_in_8bit=True
         )
 
     else:  # 4 bit 양자화
-        model_kwargs["device_map"] = args.device
-        model_kwargs["load_in_4bit"] = True
-        model_kwargs["bnb_4bit_compute_dtype"] = torch.float16
-
         model = AutoModelForCausalLM.from_pretrained(
             args.model_id,
             trust_remote_code=True,
-            **model_kwargs,
+            device_map=args.device,
+
+            load_in_4bit=True,
+            bnb_4bit_compute_dtype=torch.float16
         )
     model.eval()
 
