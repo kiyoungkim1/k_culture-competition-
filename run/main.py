@@ -78,7 +78,7 @@ def main(args):
         model = AutoModelForCausalLM.from_pretrained(args.model_id,
                                                      device_map=args.device, torch_dtype="auto")
 
-    elif 'GPTQ' in args.model_id or 'fp8':   # 양자화 없음
+    elif 'GPTQ' in args.model_id or 'fp8' in args.model_id:   # 양자화 없음
         model = AutoModelForCausalLM.from_pretrained(
             args.model_id,
             trust_remote_code=True,
